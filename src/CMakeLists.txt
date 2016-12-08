@@ -2,16 +2,8 @@
 
 # Source files
 set(SOURCE_FILES
-        acu.cc
-        aggregation.cc
-        correlation.cc
-        incoming_alert.cc
-        outgoing_alert.cc
-        receiver.cc
-        sender.cc
-        storage.cc
-        threshold.cc)
+        main.cc)
 
-# Library definition + linking
-add_library(acu ${SOURCE_FILES})
-target_link_libraries(acu ${LINK_LIBS})
+# Executable definition
+add_executable(acu-impl ${SOURCE_FILES})
+target_link_libraries(acu-impl ${LINK_LIBS})
