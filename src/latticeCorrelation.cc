@@ -4,8 +4,12 @@
 
 #include "acu/correlation.h"
 #include "acu/lattice.h"
+#include <unordered_set>
 struct lattice {}
 struct pattern {}
+
+using namespace acu:
+using namespace std:
 
 class LatticeCorrelation: public Correlation{
         int thresholds[] = [10];
@@ -13,7 +17,7 @@ class LatticeCorrelation: public Correlation{
         struct dbInfos = 0;
         compress_lattice(lattice, threshold);
     public:
-        void Invoke(struct alerts){
+        struct Invoke(struct alerts){
             // create returned list
             patterns = [];
             // Alle lattices indiziert nach sourceIP
@@ -42,9 +46,27 @@ class LatticeCorrelation: public Correlation{
             for(all lattice_ip in Lattice){
                 // compress revised Lattice lattice_ip using threshold
                 // ???
-                patterns += compress_lattice(lattice_ip, thresholds[0]);
+                patterns += latticeCompression(lattice_ip, thresholds[0]);
             }
         return patterns;
+        }
+        unordered_set latticeCompression(Lattice lattice_ip, int[] thresholds){
+            unordered_set<T> patterns;
+            for(unordered_set pattern : Node){
+                if(pattern is leaf){
+                    pattern.remaining = pattern.support;
+                } else {
+                    pattern.remaining = 0;
+                    for(pattern.child : pattern.children){
+                        pattern.remaining += pattern.child.reamining;
+                    }
+                }
+                if(pattern.remaining >= threshold) {
+                    patterns.insert(pattern);
+                    pattern.remaining = 0;
+                }
+            }
+            return patterns;            
         }
         
 }
