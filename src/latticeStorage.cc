@@ -32,7 +32,7 @@ class latticeStorage: public Storage{
         }
         struct query(string query){
             // get Data out of DB
-            status = *this->Get(ReadOptions(), query, )
+            status = *this->Get(ReadOptions(), query, &data)
             // response struct not final. More thoughts to be made.
             return  struct data {
                 string sourceIP;
