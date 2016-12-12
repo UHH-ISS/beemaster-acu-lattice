@@ -2,11 +2,16 @@
 // Created by florian on 12/1/16.
 //
 
+// Lattice is a map, key is ip, value is set of patterns
+// Rocksdb benutzt ips als key und patterns als value. ggf. ip:j, wobei j dast j-te pattern ist. Siehe paper.
+//
+
 #include "acu/correlation.h"
 #include "acu/lattice.h"
+#include <acu/Storage>
 #include <unordered_set>
-struct lattice {}
-struct pattern {}
+#include <unordered_map>
+#include <string>
 
 using namespace acu:
 using namespace std:
@@ -15,16 +20,17 @@ class LatticeCorrelation: public Correlation{
         int thresholds[] = [10];
         string topic = "/acu/scans";
         struct dbInfos = 0;
-        compress_lattice(lattice, threshold);
     public:
-        struct Invoke(struct alerts){
-            // create returned list
-            patterns = [];
-            // Alle lattices indiziert nach sourceIP
-            lattice_ip = Aggregation.get()
+        unordered_set Invoke(struct alerts){
+            // init set of patterns that will be returned
+            unordered_set<T> patterns;
+            // init lattices indexed by ip. Here a request to storage needs to be done
+            // e.g get all entries from db holen, ip is key, pattern is value
+            unordered_map<string, unordered_set> lattice_ip = Storage.get()
                 for(IncomingAlert alert: alerts){
                     ip = IncomingAlert.sourceIP;
-                    if(!lattice_ip.find(ip)){
+                    it = lattice_ip.find(ip);
+                    if(it != lattice_ip.end()){
                         // create lattice with ip
                         lattice_ip = Lattice(ip);
                     }
