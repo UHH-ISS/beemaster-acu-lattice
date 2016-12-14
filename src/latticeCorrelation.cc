@@ -4,7 +4,6 @@
 
 // Lattice is a map, key is ip, value is set of patterns
 // Rocksdb benutzt ips als key und patterns als value. ggf. ip:j, wobei j dast j-te pattern ist. Siehe paper.
-// TODO: Welchen Datentyp soll pattern haben
 
 #include "acu/correlation.h"
 #include "acu/lattice.h"
@@ -47,11 +46,11 @@ class LatticeCorrelation: public Correlation{
         string topic = "/acu/scans";
         struct dbInfos = 0;
         // alle patterns nach paper hardcoded
-        string patterns[] = {"srcIp", "srcIp:srcPrt", "srcIp:dstPrt", "srcIp:protocol", "srcIp:srcPrt:dstPrt", "srcIp:srcPrt:protocol", "srcIp:dstPrt:protocol", "srcIp:srcPrt:dstPrt:protocol"};
-        // TODO: Implement generate pattern method
-        struct generatePattern(struct alert, string pattern){
+        string patternsTypes[] = {"srcIp", "srcIp:srcPrt", "srcIp:dstPrt", "srcIp:protocol", "srcIp:srcPrt:dstPrt", "srcIp:srcPrt:protocol", "srcIp:dstPrt:protocol", "srcIp:srcPrt:dstPrt:protocol"};
+        struct generatePattern(struct alert, string pattern1){
+            // TODO: Support calc missing for lattice_ip["<patternSignature>"].support = lattice_ip["<patternSignature>"].count / alerts.size()
             pattern p;
-            auto elements = split(pattern, ':');
+            auto elements = split(pattern1, ':');
             for (auto element : elements){
                 switch(element) {
                     case "srcIp" :
@@ -69,31 +68,29 @@ class LatticeCorrelation: public Correlation{
     public:
         unordered_set Invoke(struct alerts){
             // init set of patterns that will be returned
-            unordered_set<T> patterns;
+            unordered_set<struct> patterns;
             // init lattices indexed by ip. Here a request to storage needs to be done
             // e.g get all entries from db holen, ip is key, pattern is value
+            // TODO: DB call here
             unordered_map<string, unordered_set> lattice_ip = Storage.get()
                 for(IncomingAlert alert: alerts){
                     ip = IncomingAlert.sourceIP;
                     it = lattice_ip.find(ip);
                     if(it != lattice_ip.end()){
                         // create lattice with ip
-                        // TODO: do generate pattern here, instead with the extra loop
-                        unordered_set<T> patterns_ip;
+                        unordered_set<struct> patterns_ip;
                     }
-                    for(int i = 0; i < 8; i++){
-                        //TODO: Generate Pattern Method, probably for loop could be discarded
-                        patterns2_ip = generatePattern(alert) ;
-                        // TODO: Support calc missing for lattice_ip["<patternSignature>"].support = lattice_ip["<patternSignature>"].count / alerts.size()
+                    for(auto patternType : patternTypes){
+                        patterns_ip.insert(generatePattern(alert, patternType)) ;
                     }
                 }
             // filtering process
             // mining significant pattern instances
             for(auto lattices : lattice_ip){
-                for(<T> pattern :lattices){
-                    if(pattern.support < thresholds[0]){
+                for(auto pattern1 : lattices){
+                    if(pattern1.support < thresholds[0]){
                         // pattern is insignificant -> delete
-                        lattices.erase(pattern.signature);
+                        lattices.erase(pattern1.signature);
                     }
                 }
             }
@@ -106,20 +103,20 @@ class LatticeCorrelation: public Correlation{
             }
         return patterns;
         }
-        unordered_set latticeCompression(unordered_set<T> lattice, int threshold){
-            unordered_set<T> patterns;
-            for(unordered_set pattern : Node){
-                if(pattern is leaf){
-                    pattern.remaining = pattern.support;
+        unordered_set latticeCompression(unordered_set<struct> lattice, int threshold){
+            unordered_set<struct> patterns;
+            for(unordered_set pattern1 : Node){
+                if(pattern1 is leaf){
+                    pattern1.remaining = pattern.support;
                 } else {
-                    pattern.remaining = 0;
-                    for(pattern.child : pattern.children){
-                        pattern.remaining += pattern.child.reamining;
+                    pattern1.remaining = 0;
+                    for(pattern1.child : pattern1.children){
+                        pattern1.remaining += pattern1.child.reamining;
                     }
                 }
-                if(pattern.remaining >= threshold) {
-                    patterns.insert(pattern);
-                    pattern.remaining = 0;
+                if(pattern1.remaining >= threshold) {
+                    patterns.insert(pattern1);
+                    pattern1.remaining = 0;
                 }
             }
             return patterns;            
