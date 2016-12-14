@@ -17,12 +17,12 @@
 #include <algorithm>
 using namespace std;
 struct pattern {
-        string type;
         string srcIp;
         int srcPrt;
         int dstPrt;
         string protocol;
         int support;
+        string type;
     };
 // just for quick and dirty testing
     struct alert {
@@ -31,6 +31,20 @@ struct pattern {
         int dstPrt;
         string protocol;
     };
+// hash func for unordered_set
+template<>
+struct hash<pattern>{
+    std::size_t operator()(const pattern& k) const{
+        using std::size_t;
+        using std::hash;
+        using std::string;
+        // Compute individual hash values for first,
+        // second and third and combine them using XOR
+        // and bit shifting:
+        // TODO: define better hashfunc!
+        return (hash<string>()(k.srcIp));
+    }
+};
 namespace acu{
     // from: http://stackoverflow.com/questions/24327637/what-is-the-most-efficient-c-method-to-split-a-string-based-on-a-particular-de
     vector<string>
@@ -77,17 +91,17 @@ namespace acu{
                 return p;
             }
         public:
-            unordered_set<pattern> Invoke(alert alerts[]){
+            unordered_set<pattern> Invoke(vector<alert> alerts){
                 // TODO: List, Array what type is alerts?
                 // init set of patterns that will be returned
                 unordered_set<pattern> patterns;
                 // init lattices indexed by ip. Here a request to storage needs to be done
                 // e.g get all entries from db holen, ip is key, pattern is value
                 // TODO: DB call here: can I regex on all keys in rocksdb?
-                unordered_map<string, unordered_set> lattice_ip = {};
-                    for(alert alert: alerts){
-                        ip = IncomingAlert.sourceIP;
-                        it = lattice_ip.find(ip);
+                unordered_set<pattern> lattice_ip = {};
+                    for(int i = 0; i < alerts.size(); i++){
+                        string ip = alerts[i].srcIp;
+                        unordered_set<pattern>::const_iterator it = lattice_ip.find(ip);
                         if(it == lattice_ip.end()){
                             // create lattice with ip
                             unordered_set<pattern> patterns_ip;
@@ -116,6 +130,7 @@ namespace acu{
                 }
             return patterns;
             }
+            /*
             unordered_set<pattern> latticeCompression(unordered_set<pattern> lattice, int threshold){
                 unordered_set<pattern> patterns;
                 for(unordered_set pattern1 : Node){
@@ -134,17 +149,19 @@ namespace acu{
                 }
                 return patterns;            
             }
+            */
             
     };
 }
 int main(){
-    LatticeCorrelation l;
+    acu::LatticeCorrelation l;
     alert a;
     a.srcIp = "60.240.134.94";
     a.srcPrt = 4313;
     a.dstPrt = 1434;
-    a.protocol = "TCP"
-    array<alert, 1> a1 = {{a}};
+    a.protocol = "TCP";
+    vector<alert> v;
+    v.push_back(a);
     auto res = l.Invoke(a1);
     cout << res;
     return 0;
