@@ -3,8 +3,7 @@
 //
 
 // Lattice is a map, key is ip, value is set of patterns
-// Rocksdb benutzt ips als key und patterns als value. ggf. ip:j, wobei j dast j-te pattern ist. Siehe paper.
-
+// Rocksdb speichert nicht die pattern, sondern einfach nur ein count. z.B srcIP:srcPrt -> 60.240.134.94:4313
 #include "acu/correlation.h"
 #include "acu/lattice.h"
 #include <acu/Storage>
@@ -16,7 +15,7 @@ using namespace acu:
 using namespace std:
 
 struct pattern {
-    string signature;
+    string type;
     string srcIp;
     int srcPrt;
     int dstPrt;
@@ -42,15 +41,15 @@ split( string const& original, char separator )
 }
 
 class LatticeCorrelation: public Correlation{
-        int thresholds[] = [10];
+        int threshold = 5;
         string topic = "/acu/scans";
-        struct dbInfos = 0;
+        // struct dbInfos = 0;
         // alle patterns nach paper hardcoded
         string patternsTypes[] = {"srcIp", "srcIp:srcPrt", "srcIp:dstPrt", "srcIp:protocol", "srcIp:srcPrt:dstPrt", "srcIp:srcPrt:protocol", "srcIp:dstPrt:protocol", "srcIp:srcPrt:dstPrt:protocol"};
-        struct generatePattern(struct alert, string pattern1){
+        struct generatePattern(struct alert, string patternType){
             // TODO: Support calc missing for lattice_ip["<patternSignature>"].support = lattice_ip["<patternSignature>"].count / alerts.size()
             pattern p;
-            auto elements = split(pattern1, ':');
+            auto elements = split(patternType, ':');
             for (auto element : elements){
                 switch(element) {
                     case "srcIp" :
@@ -63,23 +62,26 @@ class LatticeCorrelation: public Correlation{
                         p.protocol = alert.protocol;
                 }
             }
+            p.type = patternType;
             return p;
         }
     public:
-        unordered_set Invoke(struct alerts){
+        auto Invoke(struct alerts){
+            // TODO: List, Array what type is alerts?
             // init set of patterns that will be returned
             unordered_set<struct> patterns;
             // init lattices indexed by ip. Here a request to storage needs to be done
             // e.g get all entries from db holen, ip is key, pattern is value
-            // TODO: DB call here
+            // TODO: DB call here: can I regex on all keys in rocksdb?
             unordered_map<string, unordered_set> lattice_ip = Storage.get()
                 for(IncomingAlert alert: alerts){
                     ip = IncomingAlert.sourceIP;
                     it = lattice_ip.find(ip);
-                    if(it != lattice_ip.end()){
+                    if(it == lattice_ip.end()){
                         // create lattice with ip
                         unordered_set<struct> patterns_ip;
                     }
+                    // generate pattern, for all pattern types
                     for(auto patternType : patternTypes){
                         patterns_ip.insert(generatePattern(alert, patternType)) ;
                     }
@@ -88,7 +90,7 @@ class LatticeCorrelation: public Correlation{
             // mining significant pattern instances
             for(auto lattices : lattice_ip){
                 for(auto pattern1 : lattices){
-                    if(pattern1.support < thresholds[0]){
+                    if(pattern1.support < threshold){
                         // pattern is insignificant -> delete
                         lattices.erase(pattern1.signature);
                     }
@@ -99,7 +101,7 @@ class LatticeCorrelation: public Correlation{
             for(auto lattice : lattice_ip){
                 // compress revised Lattice lattice_ip using threshold
                 // TODO: merge patterns
-                patterns += latticeCompression(lattice, thresholds[0]);
+                patterns += latticeCompression(lattice, threshold);
             }
         return patterns;
         }
