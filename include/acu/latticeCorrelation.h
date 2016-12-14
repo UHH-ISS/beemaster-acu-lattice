@@ -4,10 +4,10 @@
 
 #ifndef ACU_FW_LATTICECORRELATION_H
 #define ACU_FW_LATTICECORRELATION_H
-
+#include "correlation.h"
 namespace acu {
 
-    class latticeCorrelation {
+    class latticeCorrelation : public Correlation {
     public:
         latticeCorrelation();
 

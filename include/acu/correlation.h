@@ -4,7 +4,6 @@
 
 #ifndef ACU_FW_CORRELATION_H
 #define ACU_FW_CORRELATION_H
-
 namespace acu {
 
     class Correlation {
