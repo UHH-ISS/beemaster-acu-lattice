@@ -16,12 +16,56 @@
 using namespace acu:
 using namespace std:
 
+struct pattern {
+    string signature;
+    string srcIp;
+    int srcPrt;
+    int dstPrt;
+    string protocol;
+    int support;
+}
+
+// from: http://stackoverflow.com/questions/24327637/what-is-the-most-efficient-c-method-to-split-a-string-based-on-a-particular-de
+vector<string>
+split( string const& original, char separator )
+{
+    vector<string> results;
+    string::const_iterator start = original.begin();
+    string::const_iterator end = original.end();
+    string::const_iterator next = find( start, end, separator );
+    while ( next != end ) {
+            results.push_back( string( start, next ) );
+            start = next + 1;
+            next = find( start, end, separator );
+        }
+    results.push_back( string( start, next ) );
+    return results;
+}
+
 class LatticeCorrelation: public Correlation{
         int thresholds[] = [10];
         string topic = "/acu/scans";
         struct dbInfos = 0;
+        // alle patterns nach paper hardcoded
+        string patterns[] = {"srcIp", "srcIp:srcPrt", "srcIp:dstPrt", "srcIp:protocol", "srcIp:srcPrt:dstPrt", "srcIp:srcPrt:protocol", "srcIp:dstPrt:protocol", "srcIp:srcPrt:dstPrt:protocol"};
         // TODO: Implement generate pattern method
-        generatePattern(string ip);
+        struct generatePattern(struct alert, string pattern){
+            pattern p;
+            auto elements = split(pattern, ':');
+            for (auto element : elements){
+                switch(element) {
+                    case "srcIp" :
+                        p.srcIp = alert.srcIp;
+                    case "srcPrt" :
+                        p.srcPrt = alert.srcPrt;
+                    case "dstPrt" :
+                        p.srcPrt = alert.dstPrt;
+                    case "protocol" :
+                        p.protocol = alert.protocol;
+                }
+            }
+            return p;
+        }
     public:
         unordered_set Invoke(struct alerts){
             // init set of patterns that will be returned
