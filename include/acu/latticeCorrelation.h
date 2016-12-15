@@ -10,8 +10,7 @@ namespace acu {
     class latticeCorrelation : public Correlation {
     public:
         latticeCorrelation();
-
-        virtual void Invoke() = 0;
+        //Invoke();
     };
 }
 
