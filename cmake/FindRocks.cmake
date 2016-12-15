@@ -29,25 +29,25 @@ find_path(RDB_ROOT_DIR
 
 find_path(RDB_INCLUDE_DIR
     NAMES rocksdb/db.h
-		PATHS ${RDB_ROOT_DIR}/include
+    PATHS ${RDB_ROOT_DIR}/include
 )
 
 find_library(RDB_LIBRARY
     NAMES rocksdb
     PATHS
-				${RDB_ROOT_DIR}
-				#${RDB_ROOT_DIR}/cmake-build-debug/src
-				#${RDB_ROOT_DIR}/build/src
+    ${RDB_ROOT_DIR}
+    #${RDB_ROOT_DIR}/cmake-build-debug/src
+    #${RDB_ROOT_DIR}/build/src
 )
 
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(RDB DEFAULT_MSG
-		RDB_LIBRARY
-		RDB_INCLUDE_DIR
+    RDB_LIBRARY
+    RDB_INCLUDE_DIR
 )
 
 mark_as_advanced(
-		RDB_ROOT_DIR
-		RDB_INCLUDE_DIR
-		RDB_LIBRARY
+    RDB_ROOT_DIR
+    RDB_INCLUDE_DIR
+    RDB_LIBRARY
 )

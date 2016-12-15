@@ -13,11 +13,11 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 # Link against librdb
 #
 # Find the library
-#find_package(rocksdb REQUIRED)
+find_package(Rocks REQUIRED)
 # Add the headers to include directories
-#include_directories(BEFORE ${RDB_INCLUDE_DIR})
+include_directories(BEFORE ${RDB_INCLUDE_DIR})
 # Add the library to the LINK_LIBS
-#set(LINK_LIBS ${LINK_LIBS} ${RDB_LIBRARY})
+set(LINK_LIBS ${LINK_LIBS} ${RDB_LIBRARY})
 
 # Link against libbroker
 #
