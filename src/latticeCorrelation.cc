@@ -24,7 +24,12 @@ struct pattern {
         int support;
         string type;
         string signature;
+        bool operator==(const pattern&) const;
     };
+bool pattern::operator==(const pattern& p1) const{
+    return hash<pattern>()(p1) == hash<pattern>()(this);
+    //return 1;
+}
 // just for quick and dirty testing
 struct alert {
         string srcIp;
@@ -36,9 +41,9 @@ struct alert {
 namespace std{
     template<> struct hash<pattern>{
         std::size_t operator()(const pattern& k) const{
-            using std::size_t;
-            using std::hash;
-            using std::string;
+            //using std::size_t;
+            //using std::hash;
+            //using std::string;
             // Compute individual hash values for first,
             // second and third and combine them using XOR
             // and bit shifting:
