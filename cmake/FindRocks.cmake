@@ -24,7 +24,7 @@ find_path(RDB_ROOT_DIR
     # the way to go.
     # [0]: https://cmake.org/pipermail/cmake/2010-October/040460.html
     # TODO: ADD YOUR CUSTOM PATH HERE!
-    PATHS ../rocksdb
+		PATHS rocksdb
 )
 
 find_path(RDB_INCLUDE_DIR

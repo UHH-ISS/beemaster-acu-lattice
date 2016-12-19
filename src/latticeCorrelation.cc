@@ -16,6 +16,7 @@
 #include <iterator>
 #include <algorithm>
 using namespace std;
+
 struct pattern {
         string srcIp;
         int srcPrt;
@@ -24,12 +25,10 @@ struct pattern {
         int support;
         string type;
         string signature;
-        bool operator==(const pattern&) const;
+        inline bool operator==(const pattern& p1) const;        
+        //return 
     };
-bool pattern::operator==(const pattern& p1) const{
-    return hash<pattern>()(p1) == hash<pattern>()(this);
-    //return 1;
-}
+
 // just for quick and dirty testing
 struct alert {
         string srcIp;
@@ -39,7 +38,7 @@ struct alert {
     };
 // hash func for unordered_set
 namespace std{
-    template<> struct hash<pattern>{
+    template<> struct hash<pattern> {
         std::size_t operator()(const pattern& k) const{
             //using std::size_t;
             //using std::hash;
@@ -49,8 +48,12 @@ namespace std{
             // and bit shifting:
             // TODO: define better hashfunc!
             return (hash<string>()(k.srcIp));
+            //return 1;
         }
     };
+}
+inline bool pattern::operator==(const pattern& p1) const{
+    return hash<pattern>()(p1) == hash<pattern>()(*this);
 }
 namespace acu{
     // from: http://stackoverflow.com/questions/24327637/what-is-the-most-efficient-c-method-to-split-a-string-based-on-a-particular-de
