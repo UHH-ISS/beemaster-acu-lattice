@@ -50,11 +50,19 @@ namespace std{
                     ^ hash<int>()(k.dstPrt)
                     ^ hash<string>()(k.protocol)) ;
         }
-    };
+    };    
+    // Merge two unordered_set<pattern> instances
+
+    unordered_set<pattern> merge_set(const unordered_set<pattern>& p1,
+                                                const unordered_set<pattern>& p2){
+        // TODO:compare entries of sets and return union
+        return p1;
+    }
 }
 inline bool pattern::operator==(const pattern& p1) const{
     return hash<pattern>()(p1) == hash<pattern>()(*this);
 }
+
 namespace acu{
     // from: http://stackoverflow.com/questions/24327637/what-is-the-most-efficient-c-method-to-split-a-string-based-on-a-particular-de
     vector<string>
@@ -87,7 +95,7 @@ namespace acu{
 
                 auto elements = split(patternType, ':');
                 for (auto element : elements){
-                    //TODO REBUILD!
+                    //TODO REBUILD alert -> pattern mapping
                     /*
                     switch(element) {
                         case "srcIp" :
@@ -133,7 +141,6 @@ namespace acu{
                     }
                 // filtering process
                 // mining significant pattern instances
-                // auto itr = mySet.begin(); itr != mySet.end(); ++itr
                 for(auto& lattice_ip : lattice){
                     auto lattice_ip2 = lattice_ip.second;
                     for(auto& pattern1 : lattice_ip2){
@@ -148,7 +155,7 @@ namespace acu{
                 for(auto& lattice_ip : lattice){
                     // compress revised Lattice lattice_ip using threshold
                     // TODO: merge patterns
-                    patterns += latticeCompression(lattice_ip, threshold);
+                    patterns = merge_set(patterns, this->latticeCompression(lattice_ip.second, threshold));
                 }
             return patterns;
             }
@@ -195,4 +202,4 @@ namespace acu{
         return 0;
     }
 */
-}
+
