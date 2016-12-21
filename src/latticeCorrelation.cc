@@ -18,6 +18,8 @@
 using namespace std;
 
 struct pattern {
+        int count;
+        int remaining;
         string srcIp;
         int srcPrt;
         int dstPrt;
@@ -40,15 +42,13 @@ struct alert {
 namespace std{
     template<> struct hash<pattern> {
         std::size_t operator()(const pattern& k) const{
-            //using std::size_t;
-            //using std::hash;
-            //using std::string;
             // Compute individual hash values for first,
             // second and third and combine them using XOR
             // and bit shifting:
-            // TODO: define better hashfunc!
-            return (hash<string>()(k.srcIp));
-            //return 1;
+            return (hash<string>()(k.srcIp)
+                    ^ hash<int>()(k.srcPrt)
+                    ^ hash<int>()(k.dstPrt)
+                    ^ hash<string>()(k.protocol)) ;
         }
     };
 }
@@ -78,9 +78,13 @@ namespace acu{
             // struct dbInfos = 0;
             // alle patterns nach paper hardcoded
             string patternsTypes[8] = {"srcIp", "srcIp:srcPrt", "srcIp:dstPrt", "srcIp:protocol", "srcIp:srcPrt:dstPrt", "srcIp:srcPrt:protocol", "srcIp:dstPrt:protocol", "srcIp:srcPrt:dstPrt:protocol"};
-            pattern generatePattern(struct alert, string patternType){
-                // TODO: Support calc missing for lattice_ip["<patternSignature>"].support = lattice_ip["<patternSignature>"].count / alerts.size()
+            // generate pattern for a certain patternType and alert. Map from alert all members according to patterntype to pattern
+            pattern generatePattern(struct alert, string patternType, int alertsSize){
+                // map
                 pattern p;
+                ++p.count;
+                p.support = p.count / alertsSize;
+
                 auto elements = split(patternType, ':');
                 for (auto element : elements){
                     //TODO REBUILD!
@@ -103,7 +107,6 @@ namespace acu{
         public:
             void Invoke(){};
             unordered_set<pattern> Invoke(vector<alert> alerts){
-                // TODO: List, Array what type is alerts?
                 // init set of patterns that will be returned
                 unordered_set<pattern> patterns;
                 // init lattices indexed by ip. Here a request to storage needs to be done
@@ -125,7 +128,7 @@ namespace acu{
                         }
                         // generate pattern, for all pattern types
                         for(string patternType : this->patternsTypes){
-                            lattice_ip.insert(generatePattern(currAlert, patternType)) ;
+                            lattice_ip.insert(generatePattern(currAlert, patternType, alerts.size())) ;
                         }
                     }
                 // filtering process
@@ -137,28 +140,31 @@ namespace acu{
                         if(pattern1.support < threshold){
                             // pattern is insignificant -> delete
                             lattice_ip2.erase(pattern1);
+                        }
                     }
-                    //}
                 }
                 // filtering redundant pattern instances
                 // init non-redundant significant pattern instance set
                 for(auto& lattice_ip : lattice){
                     // compress revised Lattice lattice_ip using threshold
                     // TODO: merge patterns
-                    //patterns += latticeCompression(lattice, threshold);
+                    patterns += latticeCompression(lattice_ip, threshold);
                 }
             return patterns;
             }
-            /*
-            unordered_set<pattern> latticeCompression(unordered_set<pattern> lattice, int threshold){
+            
+            unordered_set<pattern> latticeCompression(unordered_set<pattern> lattice_ip, int threshold){
                 unordered_set<pattern> patterns;
-                for(unordered_set pattern1 : Node){
+                // TODO: lattice_ip needs some sort of nodes datatype
+                // TODO: Sort lattice_ip.nodes according to a post-order traversal
+                /*
+                for(unordered_set<pattern pattern1 : Node){
                     if(pattern1 is leaf){
                         pattern1.remaining = pattern.support;
                     } else {
                         pattern1.remaining = 0;
                         for(pattern1.child : pattern1.children){
-                            pattern1.remaining += pattern1.child.reamining;
+                            pattern1.remaining += pattern1.child.remaining;
                         }
                     }
                     if(pattern1.remaining >= threshold) {
@@ -166,10 +172,9 @@ namespace acu{
                         pattern1.remaining = 0;
                     }
                 }
+                */
                 return patterns;            
-            }
-            */
-            
+            }            
     };
 };
 /*
