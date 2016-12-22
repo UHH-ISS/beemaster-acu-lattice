@@ -16,7 +16,6 @@
 #include <iterator>
 #include <algorithm>
 using namespace std;
-
 struct pattern {
         int count;
         int remaining;
@@ -52,11 +51,14 @@ namespace std{
         }
     };    
     // Merge two unordered_set<pattern> instances
-
-    unordered_set<pattern> merge_set(const unordered_set<pattern>& p1,
-                                                const unordered_set<pattern>& p2){
-        // TODO:compare entries of sets and return union
-        return p1;
+    unordered_set<pattern> merge_set(const std::vector<unordered_set<pattern>>& p){
+        unordered_set<pattern> setUnion = {};
+        for(auto pattern_set : p){
+            for(pattern p1 : pattern_set){
+                setUnion.insert(p1);    
+            }
+        }
+        return setUnion;
     }
 }
 inline bool pattern::operator==(const pattern& p1) const{
@@ -155,7 +157,10 @@ namespace acu{
                 for(auto& lattice_ip : lattice){
                     // compress revised Lattice lattice_ip using threshold
                     // TODO: merge patterns
-                    patterns = merge_set(patterns, this->latticeCompression(lattice_ip.second, threshold));
+                    std::vector<unordered_set<pattern>> sets;
+                    sets.push_back(patterns);
+                    sets.push_back(this->latticeCompression(lattice_ip.second, threshold));
+                    patterns = merge_set(sets);
                 }
             return patterns;
             }
