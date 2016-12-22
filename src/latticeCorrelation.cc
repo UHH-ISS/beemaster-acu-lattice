@@ -26,8 +26,10 @@ struct pattern {
         int support;
         string type;
         string signature;
+        bool isLeaf;
+        std::vector<pattern> parents;
+        std::vector<pattern> childs;
         inline bool operator==(const pattern& p1) const;        
-        //return 
     };
 
 // just for quick and dirty testing
@@ -59,6 +61,11 @@ namespace std{
             }
         }
         return setUnion;
+    }
+    vector<pattern> postOrder(const unordered_set<pattern>& latticeIP){    
+        //TODO: post-order traversal ALG
+        vector<pattern> nodes;
+        return nodes;
     }
 }
 inline bool pattern::operator==(const pattern& p1) const{
@@ -166,16 +173,18 @@ namespace acu{
             
             unordered_set<pattern> latticeCompression(unordered_set<pattern> lattice_ip, int threshold){
                 unordered_set<pattern> patterns;
+                // TODO: how to build node graph??
                 // TODO: lattice_ip needs some sort of nodes datatype
                 // TODO: Sort lattice_ip.nodes according to a post-order traversal
-                /*
-                for(unordered_set<pattern pattern1 : Node){
-                    if(pattern1 is leaf){
-                        pattern1.remaining = pattern.support;
+                // std::vector<pattern> nodes = post_order_traversal_sort(lattice_ip);
+                std::vector<pattern> nodes = {};
+                for(pattern pattern1 : nodes){
+                    if(pattern1.isLeaf){
+                        pattern1.remaining = pattern1.support;
                     } else {
                         pattern1.remaining = 0;
-                        for(pattern1.child : pattern1.children){
-                            pattern1.remaining += pattern1.child.remaining;
+                        for(pattern pChild : pattern1.childs){
+                            pattern1.remaining += pChild.remaining;
                         }
                     }
                     if(pattern1.remaining >= threshold) {
@@ -183,11 +192,10 @@ namespace acu{
                         pattern1.remaining = 0;
                     }
                 }
-                */
                 return patterns;            
             }            
     };
-};
+}
 /*
     int main(){
         LatticeCorrelation l;
