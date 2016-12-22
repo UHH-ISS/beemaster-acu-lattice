@@ -156,7 +156,6 @@ namespace acu{
                 // init non-redundant significant pattern instance set
                 for(auto& lattice_ip : lattice){
                     // compress revised Lattice lattice_ip using threshold
-                    // TODO: merge patterns
                     std::vector<unordered_set<pattern>> sets;
                     sets.push_back(patterns);
                     sets.push_back(this->latticeCompression(lattice_ip.second, threshold));
