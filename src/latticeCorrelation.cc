@@ -28,7 +28,7 @@ struct pattern {
         string signature;
         bool isLeaf;
         std::vector<pattern> parents;
-        std::vector<pattern> childs;
+        std::vector<pattern> children;
         inline bool operator==(const pattern& p1) const;        
     };
 
@@ -62,10 +62,14 @@ namespace std{
         }
         return setUnion;
     }
-    vector<pattern> postOrder(const unordered_set<pattern>& latticeIP){    
-        //TODO: post-order traversal ALG
-        vector<pattern> nodes;
-        return nodes;
+    void postOrder(const pattern& root, vector<pattern> nodes){    
+        if(!root.children.empty()){
+            for(auto& child : root.children){ 
+                std::postOrder(child, nodes);
+            }
+        } else if(std::find(nodes.begin(), nodes.end(), root) == nodes.end()) {
+            nodes.push_back(root);
+        } 
     }
 }
 inline bool pattern::operator==(const pattern& p1) const{
@@ -174,16 +178,17 @@ namespace acu{
             unordered_set<pattern> latticeCompression(unordered_set<pattern> lattice_ip, int threshold){
                 unordered_set<pattern> patterns;
                 // TODO: how to build node graph??
-                // TODO: lattice_ip needs some sort of nodes datatype
+                // TODO: lattice_ip needs some sort of nodes datatype, probably a generate function
                 // TODO: Sort lattice_ip.nodes according to a post-order traversal
                 // std::vector<pattern> nodes = post_order_traversal_sort(lattice_ip);
+                //std::vector<pattern> nodes = std::postOrder(lattice_ip.root, nodes);
                 std::vector<pattern> nodes = {};
                 for(pattern pattern1 : nodes){
                     if(pattern1.isLeaf){
                         pattern1.remaining = pattern1.support;
                     } else {
                         pattern1.remaining = 0;
-                        for(pattern pChild : pattern1.childs){
+                        for(pattern pChild : pattern1.children){
                             pattern1.remaining += pChild.remaining;
                         }
                     }
