@@ -24,7 +24,7 @@ struct pattern {
         int dstPrt;
         string protocol;
         int support;
-        string type;
+        int type;
         string signature;
         bool isLeaf;
         std::vector<pattern> parents;
@@ -52,7 +52,7 @@ namespace std{
                     ^ hash<string>()(k.protocol)) ;
         }
     };    
-    // Merge two unordered_set<pattern> instances
+    // Merge any unordered_set<pattern> instances
     unordered_set<pattern> merge_set(const std::vector<unordered_set<pattern>>& p){
         unordered_set<pattern> setUnion = {};
         for(auto pattern_set : p){
@@ -94,19 +94,27 @@ namespace acu{
     }
 
     class LatticeCorrelation: public Correlation {
+            pattern root;
+            vector<pattern> type2;
+            vector<pattern> type3;
+            vector<pattern> type4;
+            vector<pattern> type5;
+            vector<pattern> type6;
+            vector<pattern> type7;
+            vector<pattern> type8;
             int threshold = 5;
             string topic = "/acu/scans";
             // struct dbInfos = 0;
             // alle patterns nach paper hardcoded
             string patternsTypes[8] = {"srcIp", "srcIp:srcPrt", "srcIp:dstPrt", "srcIp:protocol", "srcIp:srcPrt:dstPrt", "srcIp:srcPrt:protocol", "srcIp:dstPrt:protocol", "srcIp:srcPrt:dstPrt:protocol"};
             // generate pattern for a certain patternType and alert. Map from alert all members according to patterntype to pattern
-            pattern generatePattern(struct alert, string patternType, int alertsSize){
+            pattern generatePattern(struct alert, string patternSignature, int alertsSize){
                 // map
                 pattern p;
                 ++p.count;
                 p.support = p.count / alertsSize;
 
-                auto elements = split(patternType, ':');
+                auto elements = split(patternSignature, ':');
                 for (auto element : elements){
                     //TODO REBUILD alert -> pattern mapping
                     /*
@@ -122,8 +130,45 @@ namespace acu{
                     }
                     */
                 }
-                p.type = patternType;
+                //p.type;
+                p.signature = patternSignature;
                 return p;
+            }
+            void generateNodesRelation(unordered_set<pattern> p1){
+                // TODO: refactor, optimize, FUCK MY ASS
+                for(auto& pattern1 : p1){
+                    switch(pattern1.type){
+                        case 1 :
+                            this->root = pattern1;
+                        case 2:
+                            this->type2.push_back(pattern1);
+                        case 3:
+                            this->type3.push_back(pattern1);
+                        case 4:
+                            this->type4.push_back(pattern1);
+                        case 5:
+                            this->type5.push_back(pattern1);
+                        case 6:
+                            this->type6.push_back(pattern1);
+                        case 7:
+                            this->type7.push_back(pattern1);
+                        case 8:
+                            this->type8.push_back(pattern1);
+                    }         
+                }
+                // TODO: Build Relations
+                // root
+                std::vector<pattern> rootChilds;
+                rootChilds.insert(rootChilds.end(), this->type2.begin(), this->type2.end());
+                rootChilds.insert(rootChilds.end(), this->type3.begin(), this->type3.end());
+                rootChilds.insert(rootChilds.end(), this->type4.begin(), this->type4.end());
+                this->root.children = rootChilds;
+
+                for(auto& pattern1 : p1){
+                        
+                }
+
+
             }
         public:
             void Invoke(){};
@@ -179,9 +224,8 @@ namespace acu{
                 unordered_set<pattern> patterns;
                 // TODO: how to build node graph??
                 // TODO: lattice_ip needs some sort of nodes datatype, probably a generate function
-                // TODO: Sort lattice_ip.nodes according to a post-order traversal
                 // std::vector<pattern> nodes = post_order_traversal_sort(lattice_ip);
-                //std::vector<pattern> nodes = std::postOrder(lattice_ip.root, nodes);
+                //std::vector<pattern> nodes = std::postOrder(lattice_ip.root, nodes);    
                 std::vector<pattern> nodes = {};
                 for(pattern pattern1 : nodes){
                     if(pattern1.isLeaf){
