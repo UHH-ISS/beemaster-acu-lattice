@@ -163,12 +163,97 @@ namespace acu{
                 rootChilds.insert(rootChilds.end(), this->type3.begin(), this->type3.end());
                 rootChilds.insert(rootChilds.end(), this->type4.begin(), this->type4.end());
                 this->root.children = rootChilds;
-
-                for(auto& pattern1 : p1){
-                        
+                
+                // all edges from 2 to 5
+                for(auto& pattern2 : this->type2){
+                    // add just childs to pattern that haven any parent attr in common
+                    for(auto& pattern5 : this->type5){
+                        if(pattern2.srcPrt == pattern5.srcPrt){
+                            pattern2.children.push_back(pattern5);
+                            pattern5.parents.push_back(pattern2);
+                        }    
+                    }
                 }
-
-
+                // all edges from 2 to 6
+                for(auto& pattern2 : this->type2){
+                    // add just childs to pattern that haven any parent attr in common
+                    for(auto& pattern6 : this->type6){
+                        if(pattern2.srcPrt == pattern6.srcPrt){
+                            pattern2.children.push_back(pattern6);
+                            pattern6.parents.push_back(pattern2);
+                        }    
+                    }
+                }
+                // all edges from 3 to 5
+                for(auto& pattern3 : this->type3){
+                    // add just childs to pattern that haven any parent attr in common
+                    for(auto& pattern5 : this->type5){
+                        if(pattern3.srcPrt == pattern5.srcPrt){
+                            pattern3.children.push_back(pattern5);
+                            pattern5.parents.push_back(pattern3);
+                        }    
+                    }
+                }
+                // 3 to 7
+                for(auto& pattern3 : this->type3){
+                    // add just childs to pattern that haven any parent attr in common
+                    for(auto& pattern7 : this->type7){
+                        if(pattern3.srcPrt == pattern7.srcPrt){
+                            pattern3.children.push_back(pattern7);
+                            pattern7.parents.push_back(pattern3);
+                        }    
+                    }
+                }
+                // 4 to 6
+                for(auto& pattern4 : this->type4){
+                    // add just childs to pattern that haven any parent attr in common
+                    for(auto& pattern6 : this->type6){
+                        if(pattern4.srcPrt == pattern6.srcPrt){
+                            pattern4.children.push_back(pattern6);
+                            pattern6.parents.push_back(pattern4);
+                        }    
+                    }
+                }
+                // 4 to 7
+                for(auto& pattern4 : this->type4){
+                    // add just childs to pattern that haven any parent attr in common
+                    for(auto& pattern7 : this->type7){
+                        if(pattern4.srcPrt == pattern7.srcPrt){
+                            pattern4.children.push_back(pattern7);
+                            pattern7.parents.push_back(pattern4);
+                        }    
+                    }
+                }
+                // 5 to 8
+                for(auto& pattern2 : this->type5){
+                    // add just childs to pattern that haven any parent attr in common
+                    for(auto& pattern5 : this->type8){
+                        if(pattern2.srcPrt == pattern5.srcPrt){
+                            pattern2.children.push_back(pattern5);
+                            pattern5.parents.push_back(pattern2);
+                        }    
+                    }
+                }
+                // 6 to 8
+                for(auto& pattern2 : this->type6){
+                    // add just childs to pattern that haven any parent attr in common
+                    for(auto& pattern5 : this->type8){
+                        if(pattern2.srcPrt == pattern5.srcPrt){
+                            pattern2.children.push_back(pattern5);
+                            pattern5.parents.push_back(pattern2);
+                        }    
+                    }
+                }
+                // 7 to 8
+                for(auto& pattern2 : this->type7){
+                    // add just childs to pattern that haven any parent attr in common
+                    for(auto& pattern5 : this->type8){
+                        if(pattern2.srcPrt == pattern5.srcPrt){
+                            pattern2.children.push_back(pattern5);
+                            pattern5.parents.push_back(pattern2);
+                        }    
+                    }
+                }
             }
         public:
             void Invoke(){};
