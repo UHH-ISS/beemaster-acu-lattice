@@ -2,11 +2,11 @@
 // Created by florian on 12/1/16.
 //
 
-// Lattice is a map, key is ip, value is set of patterns
-// Rocksdb speichert nicht die pattern, sondern einfach nur ein count. z.B srcIP:srcPrt -> 60.240.134.94:4313
-//#include "acu/correlation.h"
-//#include <acu/Storage>
-#include "acu/latticeCorrelation.h"
+#include <acu/correlation.h>
+#include <acu/storage.h>
+#include <acu/outgoing_alert.h>
+#include <acu/latticeCorrelation.h>
+#include <acu/threshold.h>
 #include <unordered_set>
 #include <unordered_map>
 #include <string>
@@ -15,6 +15,7 @@
 #include <vector>
 #include <iterator>
 #include <algorithm>
+#include <chrono>
 using namespace std;
 struct pattern {
         int count;
@@ -108,7 +109,7 @@ namespace acu{
             // alle patterns nach paper hardcoded
             string patternsTypes[8] = {"srcIp", "srcIp:srcPrt", "srcIp:dstPrt", "srcIp:protocol", "srcIp:srcPrt:dstPrt", "srcIp:srcPrt:protocol", "srcIp:dstPrt:protocol", "srcIp:srcPrt:dstPrt:protocol"};
             // generate pattern for a certain patternType and alert. Map from alert all members according to patterntype to pattern
-            pattern generatePattern(struct alert, string patternSignature, int alertsSize){
+            pattern generatePattern(alert a, string patternSignature, int alertsSize){
                 // map
                 pattern p;
                 ++p.count;
@@ -116,19 +117,21 @@ namespace acu{
 
                 auto elements = split(patternSignature, ':');
                 for (auto element : elements){
-                    //TODO REBUILD alert -> pattern mapping
-                    /*
-                    switch(element) {
-                        case "srcIp" :
-                            p.srcIp = alert.srcIp;
-                        case "srcPrt" :
-                            p.srcPrt = alert.srcPrt;
-                        case "dstPrt" :
-                            p.srcPrt = alert.dstPrt;
-                        case "protocol" :
-                            p.protocol = alert.protocol;
+                    //TODO refactor looks shitty
+                    if(element == "srcIp"){
+                        p.srcIp = a.srcIp;
+                        break;
+                    } else if (element == "srcPrt"){
+                        p.srcPrt = a.srcPrt;
+                        break;
+                    } else if (element == "dstPrt"){
+                        p.dstPrt = a.dstPrt;
+                        break;
+                    } else if (element == "protocol"){
+                        p.protocol = a.protocol;
+                        break;
                     }
-                    */
+
                 }
                 //p.type;
                 p.signature = patternSignature;
@@ -156,7 +159,7 @@ namespace acu{
                             this->type8.push_back(pattern1);
                     }         
                 }
-                // TODO: Build Relations
+                // Build Relations
                 // root
                 std::vector<pattern> rootChilds;
                 rootChilds.insert(rootChilds.end(), this->type2.begin(), this->type2.end());
@@ -256,8 +259,12 @@ namespace acu{
                 }
             }
         public:
-            void Invoke(){};
-            unordered_set<pattern> Invoke(vector<alert> alerts){
+            OutgoingAlert* Invoke(){
+                //this->correlate();
+                auto o = acu::OutgoingAlert("test", std::chrono::system_clock::now()) ;
+                return &o;
+            }
+            unordered_set<pattern> correlate(vector<alert> alerts){
                 // init set of patterns that will be returned
                 unordered_set<pattern> patterns;
                 // init lattices indexed by ip. Here a request to storage needs to be done
@@ -307,7 +314,6 @@ namespace acu{
             
             unordered_set<pattern> latticeCompression(unordered_set<pattern> lattice_ip, int threshold){
                 unordered_set<pattern> patterns;
-                // std::vector<pattern> nodes = post_order_traversal_sort(lattice_ip);
                 std::vector<pattern> nodes;
                 std::postOrder(this->root, nodes);    
                 for(pattern pattern1 : nodes){
@@ -328,9 +334,11 @@ namespace acu{
             }            
     };
 }
-/*
-    int main(){
-        LatticeCorrelation l;
+/**
+    int test(){
+        acu::Storage stor;
+        std::vector<Threshold> thresholds;
+        acu::LatticeCorrelation::LatticeCorrelation({*storage, *thresholds}) l;
         alert a;
         a.srcIp = "60.240.134.94";
         a.srcPrt = 4313;
@@ -340,10 +348,8 @@ namespace acu{
         v.push_back(a);
         auto res = l.Invoke(v);
         for(auto c : res){
-        cout << 
+            cout << c.srcIp; 
         }
-        cout << res;
         return 0;
     }
-*/
-
+**/
