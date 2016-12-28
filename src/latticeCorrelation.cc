@@ -307,11 +307,9 @@ namespace acu{
             
             unordered_set<pattern> latticeCompression(unordered_set<pattern> lattice_ip, int threshold){
                 unordered_set<pattern> patterns;
-                // TODO: how to build node graph??
-                // TODO: lattice_ip needs some sort of nodes datatype, probably a generate function
                 // std::vector<pattern> nodes = post_order_traversal_sort(lattice_ip);
-                //std::vector<pattern> nodes = std::postOrder(lattice_ip.root, nodes);    
-                std::vector<pattern> nodes = {};
+                std::vector<pattern> nodes;
+                std::postOrder(this->root, nodes);    
                 for(pattern pattern1 : nodes){
                     if(pattern1.isLeaf){
                         pattern1.remaining = pattern1.support;
