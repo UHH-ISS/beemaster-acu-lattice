@@ -1,1 +1,1 @@
-Mit `make` bauen. Die `main.cc` hat in Header von allen libs included. Das muss bauen!
+`latticeCorrelation2.cc` ist ein standalone file mit dem lattice ALG für mich zum unabhängigen testen.
