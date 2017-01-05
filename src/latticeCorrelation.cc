@@ -30,7 +30,15 @@ struct pattern {
         bool isLeaf;
         std::vector<pattern> parents;
         std::vector<pattern> children;
-        inline bool operator==(const pattern& p1) const;        
+        inline bool operator==(const pattern& p1) const;
+        pattern(){
+            this->srcIp = "";
+            this->srcPrt = 0;
+            this->dstPrt = 0;
+            this->protocol = "";
+            this->count = 0;
+            this->support = 0;
+        } 
     };
 
 // just for quick and dirty testing
@@ -103,11 +111,11 @@ namespace acu{
             vector<pattern> type6;
             vector<pattern> type7;
             vector<pattern> type8;
-            int threshold = 5;
+            int threshold = 0;
             string topic = "/acu/scans";
             // struct dbInfos = 0;
             // alle patterns nach paper hardcoded
-            string patternsTypes[8] = {"srcIp", "srcIp:srcPrt", "srcIp:dstPrt", "srcIp:protocol", "srcIp:srcPrt:dstPrt", "srcIp:srcPrt:protocol", "srcIp:dstPrt:protocol", "srcIp:srcPrt:dstPrt:protocol"};
+            std::vector<string>patternTypes = {"srcIp", "srcIp:srcPrt", "srcIp:dstPrt", "srcIp:protocol", "srcIp:srcPrt:dstPrt", "srcIp:srcPrt:protocol", "srcIp:dstPrt:protocol", "srcIp:srcPrt:dstPrt:protocol"};
             // generate pattern for a certain patternType and alert. Map from alert all members according to patterntype to pattern
             pattern generatePattern(alert a, string patternSignature, int alertsSize){
                 // map
@@ -131,9 +139,9 @@ namespace acu{
                         p.protocol = a.protocol;
                         break;
                     }
-
                 }
-                //p.type;
+                ptrdiff_t pos = find(this->patternTypes.begin(), this->patternTypes.end(), patternSignature) - this->patternTypes.begin();
+                p.type = pos;
                 p.signature = patternSignature;
                 return p;
             }
@@ -283,20 +291,26 @@ namespace acu{
                         if(it == 0){
                             // create lattice with ip
                             lattice_ip = {};
+                        } else {
+                            // get element from lattice
+                            lattice_ip = lattice.find(ip)->second;
                         }
                         // generate pattern, for all pattern types
-                        for(string patternType : this->patternsTypes){
+                        for(string patternType : this->patternTypes){
                             lattice_ip.insert(generatePattern(currAlert, patternType, alerts.size())) ;
                         }
+                        lattice[ip] = lattice_ip;
                     }
                 // filtering process
                 // mining significant pattern instances
                 for(auto& lattice_ip : lattice){
                     auto lattice_ip2 = lattice_ip.second;
-                    for(auto& pattern1 : lattice_ip2){
-                        if(pattern1.support < threshold){
+                    for(auto it = lattice_ip2.begin(); it != lattice_ip2.end();){
+                        if(it->support < this->threshold){
                             // pattern is insignificant -> delete
-                            lattice_ip2.erase(pattern1);
+                            it = lattice_ip2.erase(it);
+                        } else {
+                            it++;
                         }
                     }
                 }
@@ -334,22 +348,3 @@ namespace acu{
             }            
     };
 }
-/**
-    int test(){
-        acu::Storage stor;
-        std::vector<Threshold> thresholds;
-        acu::LatticeCorrelation::LatticeCorrelation({*storage, *thresholds}) l;
-        alert a;
-        a.srcIp = "60.240.134.94";
-        a.srcPrt = 4313;
-        a.dstPrt = 1434;
-        a.protocol = "TCP";
-        vector<alert> v;
-        v.push_back(a);
-        auto res = l.Invoke(v);
-        for(auto c : res){
-            cout << c.srcIp; 
-        }
-        return 0;
-    }
-**/

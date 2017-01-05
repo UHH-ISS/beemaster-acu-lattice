@@ -115,7 +115,7 @@ namespace acu{
             vector<pattern> type6;
             vector<pattern> type7;
             vector<pattern> type8;
-            int threshold = 5;
+            int threshold = 0;
             string topic = "/acu/scans";
             // struct dbInfos = 0;
             // alle patterns nach paper hardcoded
@@ -248,6 +248,7 @@ namespace acu{
                         if(pattern2.srcPrt == pattern5.srcPrt){
                             pattern2.children.push_back(pattern5);
                             pattern5.parents.push_back(pattern2);
+                            pattern5.isLeaf = true;
                         }    
                     }
                 }
@@ -258,6 +259,7 @@ namespace acu{
                         if(pattern2.srcPrt == pattern5.srcPrt){
                             pattern2.children.push_back(pattern5);
                             pattern5.parents.push_back(pattern2);
+                            pattern5.isLeaf = true;
                         }    
                     }
                 }
@@ -268,6 +270,7 @@ namespace acu{
                         if(pattern2.srcPrt == pattern5.srcPrt){
                             pattern2.children.push_back(pattern5);
                             pattern5.parents.push_back(pattern2);
+                            pattern5.isLeaf = true;
                         }    
                     }
                 }
@@ -319,14 +322,16 @@ namespace acu{
                     printf("mining significant pattern...\n");
                     auto lattice_ip2 = lattice_ip1.second;
                     printf("Lattice_ip2.size: %d\n", lattice_ip2.size());
-                    for(auto& pattern1 : lattice_ip2){
-                    //printf("test");
-                    printf("%s: %d ? %d\n", pattern1.signature.c_str(), pattern1.support, this->threshold);
-                        if(pattern1.support < this->threshold){
+                    for (auto it = lattice_ip2.begin(); it != lattice_ip2.end();) {
+                    printf("%s: %d ? %d\n", it->signature.c_str(), it->support, this->threshold);
+                        if(it->support < this->threshold){
                             // pattern is insignificant -> delete
-                            lattice_ip2.erase(pattern1);
+                            it = lattice_ip2.erase(it);
+                        } else {
+                            it++;
                         }
                     }
+                    //printf("Lattice_ip2.size: %d\n", lattice_ip2.size());
                 }
                 // filtering redundant pattern instances
                 // init non-redundant significant pattern instance set
