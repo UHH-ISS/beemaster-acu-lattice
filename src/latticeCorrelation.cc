@@ -5,7 +5,7 @@
 #include <acu/correlation.h>
 #include <acu/storage.h>
 #include <acu/outgoing_alert.h>
-#include <acu/latticeCorrelation.h>
+//#include <acu/lattice>
 #include <acu/threshold.h>
 #include <unordered_set>
 #include <unordered_map>
@@ -267,9 +267,6 @@ namespace acu{
                 }
             }
         public:
-            LatticeCorrelation(){
-            
-            }
             OutgoingAlert* Invoke(){
                 //this->correlate();
                 auto o = acu::OutgoingAlert("test", std::chrono::system_clock::now()) ;
@@ -353,7 +350,8 @@ namespace acu{
 }
 
 int main(){
-    acu::LatticeCorrelation l;
+    std::vector<acu::Threshold> thr = {acu::Threshold(1, "scans", "lol")}
+    acu::LatticeCorrelation(, thr ) l;
     alert a;
     a.srcIp = "60.240.134.94";
     a.srcPrt = 4313;

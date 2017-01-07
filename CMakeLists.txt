@@ -10,7 +10,8 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall -Wextra -pedantic")
 # Add ./cmake to CMAKE_MODULE_PATH to 'source' it
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 
-# Link against librdb
+
+# Link against librocksdb
 #
 # Find the library
 find_package(Rocks REQUIRED)

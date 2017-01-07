@@ -3,9 +3,7 @@
 # Source files
 set(SOURCE_FILES
         main.cc
-				#rocks.cc
-				#latticeCorrelation.cc
-				)
+        rocks_storage.cc)
 
 # Executable definition
 add_executable(acu-impl ${SOURCE_FILES})
