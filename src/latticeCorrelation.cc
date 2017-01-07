@@ -267,6 +267,9 @@ namespace acu{
                 }
             }
         public:
+            LatticeCorrelation(){
+            
+            }
             OutgoingAlert* Invoke(){
                 //this->correlate();
                 auto o = acu::OutgoingAlert("test", std::chrono::system_clock::now()) ;
@@ -347,4 +350,20 @@ namespace acu{
                 return patterns;            
             }            
     };
+}
+
+int main(){
+    acu::LatticeCorrelation l;
+    alert a;
+    a.srcIp = "60.240.134.94";
+    a.srcPrt = 4313;
+    a.dstPrt = 1434;
+    a.protocol = "TCP";
+    vector<alert> v;
+    v.push_back(a);
+    auto res = l.correlate(v);
+    for (auto c : res){
+        printf("%s" , c.srcIp.c_str())
+    }
+    return 0;    
 }

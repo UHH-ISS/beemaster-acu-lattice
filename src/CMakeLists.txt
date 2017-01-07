@@ -4,7 +4,7 @@
 set(SOURCE_FILES
         main.cc
 				#rocks.cc
-				latticeCorrelation.cc
+				#latticeCorrelation.cc
 				)
 
 # Executable definition
