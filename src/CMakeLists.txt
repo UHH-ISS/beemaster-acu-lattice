@@ -2,7 +2,7 @@
 
 # Source files
 set(SOURCE_FILES
-				#main.cc
+				main.cc
         rocks_storage.cc
 				latticeCorrelation.cc)
 

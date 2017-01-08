@@ -1,10 +1,11 @@
 //
 // Created by florian on 12/1/16.
 //
-
+#include "latticeCorrelation.h"
 #include <acu/correlation.h>
 #include <acu/storage.h>
 #include <acu/outgoing_alert.h>
+#include <acu/incoming_alert.h>
 #include "rocks_storage.h"
 #include <acu/threshold.h>
 #include <unordered_set>
@@ -48,13 +49,6 @@ struct pattern {
         } 
     };
 
-// just for quick and dirty testing
-struct alert {
-        string srcIp;
-        int srcPrt;
-        int dstPrt;
-        string protocol;
-    };
 // hash func for unordered_set
 namespace std{
     template<> struct hash<pattern> {
@@ -84,7 +78,6 @@ namespace std{
                 std::postOrder(child, nodes);
             }
         } else if(std::find(nodes.begin(), nodes.end(), root) == nodes.end()) {
-            printf("push root: %s\n", root.signature.c_str());
             nodes.push_back(root);
         } 
     }
@@ -123,7 +116,7 @@ namespace acu{
             // alle patterns nach paper hardcoded
             std::vector<string>patternTypes = {"srcIp", "srcIp:srcPrt", "srcIp:dstPrt", "srcIp:protocol", "srcIp:srcPrt:dstPrt", "srcIp:srcPrt:protocol", "srcIp:dstPrt:protocol", "srcIp:srcPrt:dstPrt:protocol"};
             // generate pattern for a certain patternType and alert. Map from alert all members according to patterntype to pattern
-            pattern generatePattern(alert a, string patternSignature, int alertsSize){
+            pattern generatePattern(acu::IncomingAlert a, string patternSignature, int alertsSize){
                 // map
                 pattern p;
                 ++p.count;
@@ -133,25 +126,23 @@ namespace acu{
                 for (auto element : elements){
                     //TODO refactor looks shitty
                     if(element == "srcIp"){
-                        p.srcIp = a.srcIp;
+                        p.srcIp = a.source_ip();
                     } else if (element == "srcPrt"){
-                        p.srcPrt = a.srcPrt;
+                        p.srcPrt = a.source_port();
                     } else if (element == "dstPrt"){
-                        p.dstPrt = a.dstPrt;
+                        p.dstPrt = a.destination_port();
                     } else if (element == "protocol"){
-                        p.protocol = a.protocol;
+                        p.protocol = a.protocol();
                     }
                 }
                 ptrdiff_t pos = find(this->patternTypes.begin(), this->patternTypes.end(), patternSignature) - this->patternTypes.begin();
                 p.type = pos+1;
-                printf("p.type: %d\n", p.type);
                 p.signature = patternSignature;
                 return p;
             }
             void generateNodesRelation(unordered_set<pattern> p1){
                 // TODO: refactor, optimize, FUCK MY ASS
                 for(auto& pattern1 : p1){
-                 printf("pattern1.type: %d\n", pattern1.type);
                     switch(pattern1.type){
                         case 1 :
                             this->root = pattern1;
@@ -171,9 +162,6 @@ namespace acu{
                             this->type8.push_back(pattern1);
                     }         
                 }
-                printf("types: %d %d %d %d %d %d %d\n", this->type2.size(),
-                        this->type3.size(), this->type4.size(), this->type5.size(),
-                        this->type6.size(), this->type7.size(), this->type8.size());
                 // Build Relations
                 // root
                 std::vector<pattern> rootChilds;
@@ -181,7 +169,6 @@ namespace acu{
                 rootChilds.insert(rootChilds.end(), this->type3.begin(), this->type3.end());
                 rootChilds.insert(rootChilds.end(), this->type4.begin(), this->type4.end());
                 this->root.children = rootChilds;
-                printf("%d\n", this->root.children.size()); 
                 // all edges from 2 to 5
                 for(auto& pattern2 : this->type2){
                     // add just childs to pattern that haven any parent attr in common
@@ -281,8 +268,7 @@ namespace acu{
                 auto o = acu::OutgoingAlert("test", std::chrono::system_clock::now()) ;
                 return &o;
             }
-            unordered_set<pattern> correlate(vector<alert> alerts, int threshold){
-                printf("correlate...\n");
+            unordered_set<pattern> correlate(vector<acu::IncomingAlert> alerts, int threshold){
                 // init set of patterns that will be returned
                 unordered_set<pattern> patterns;
                 // init lattices indexed by ip. Here a request to storage needs to be done
@@ -295,8 +281,8 @@ namespace acu{
                 unordered_set<pattern> lattice_ip;
                 unordered_set<pattern> patterns_ip;
                     for(std::size_t i = 0; i < alerts.size(); i++){
-                        alert currAlert = alerts[i];
-                        string ip = currAlert.srcIp;
+                        acu::IncomingAlert currAlert = alerts[i];
+                        string ip = currAlert.source_ip();
                         int it = lattice.count(ip);
                         if(it == 0){
                             // create lattice with ip
@@ -307,23 +293,17 @@ namespace acu{
                         }
                         // generate pattern, for all pattern types
                         for(string patternType : this->patternTypes){
-                            printf("generate pattern...\n");
                             //TODO: If pattern exists just update support val
                             lattice_ip.insert(generatePattern(currAlert, patternType, alerts.size())) ;
                         }
-                        //printf("lattice_ip.size: %d\n", lattice_ip.size());
                         lattice[ip] = lattice_ip;
                     }
                 // filtering process
                 // mining significant pattern instances
                 for(auto& lattice_ip : lattice){
-                    printf("mining significant instances...\n");
                     auto lattice_ip2 = lattice_ip.second;
-                    //printf("lattice_ip2.size: %d\n", lattice_ip2.size());
                     for(auto it = lattice_ip2.begin(); it != lattice_ip2.end();){
-                        //printf("%f ? %d\n", it->support, threshold);
                         if(it->support < threshold){
-                            printf("del");
                             // pattern is insignificant -> delete
                             it = lattice_ip2.erase(it);
                         } else {
@@ -334,28 +314,21 @@ namespace acu{
                 // filtering redundant pattern instances
                 // init non-redundant significant pattern instance set
                 for(auto& lattice_ip : lattice){
-                    printf("filtering pattern...\n");
-                    printf("lattice_ip.size: %d\n", lattice_ip.second.size());
                     // compress revised Lattice lattice_ip using threshold
                     std::vector<unordered_set<pattern>> sets;
                     sets.push_back(patterns);
                     sets.push_back(this->latticeCompression(lattice_ip.second, threshold));
-                    printf("sets: %d\n", sets.size());
                     patterns = merge_set(sets);
-                    printf("patterns.size: %d\n", patterns.size());
                 }
             return patterns;
             }
             
             unordered_set<pattern> latticeCompression(unordered_set<pattern> lattice_ip, int threshold){
-                printf("lattice compression...\n");
                 unordered_set<pattern> patterns;
                 std::vector<pattern> nodes;
                 this->generateNodesRelation(lattice_ip);
                 std::postOrder(this->root, nodes);
-                printf("nodes.size: %d\n", nodes.size());    
                 for(pattern pattern1 : nodes){
-                    printf("node: %d, %s, %d \n", pattern1.type, pattern1.signature.c_str(), bool(pattern1.isLeaf));
                             
                     if(pattern1.isLeaf){
                         pattern1.remaining = pattern1.support;
@@ -374,23 +347,23 @@ namespace acu{
             }            
     };
 }
-
+/**
 int main(){
     printf("main...\n");
     std::vector<acu::Threshold> thr = {acu::Threshold(0, "scans", "lol")};
     beemaster::RocksStorage rstr = beemaster::RocksStorage("/tmp/test");
     acu::LatticeCorrelation l = acu::LatticeCorrelation(&rstr, &thr) ;
-    alert a;
+    acu::IncomingAlert a = acu::IncomingAlert();
     a.srcIp = "60.240.134.94";
     a.srcPrt = 4313;
     a.dstPrt = 1434;
     a.protocol = "TCP";
-    alert a2;
+    acu::IncomingAlert a2;
     a2.srcIp = "60.240.134.94";
     a2.srcPrt = 1337;
     a2.dstPrt = 1434;
     a2.protocol = "TCP";
-    vector<alert> v;
+    vector<acu::IncomingAlert> v;
     v.push_back(a);
     v.push_back(a2);
     auto res = l.correlate(v, l.thresholds->at(0).count);
@@ -399,3 +372,4 @@ int main(){
     }
     return 0;    
 }
+**/
