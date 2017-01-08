@@ -11,7 +11,8 @@ endforeach()
 # Source files
 set(SOURCE_FILES
         main.cc
-        test_rocks_storage.cc)
+        test_rocks_storage.cc
+				test_lattice.cc)
 
 # Add catch (testing library)
 set(CATCH_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/lib)
