@@ -86,7 +86,7 @@ inline bool pattern::operator==(const pattern& p1) const{
     return hash<pattern>()(p1) == hash<pattern>()(*this);
 }
 
-namespace acu{
+namespace beemaster{
     // from: http://stackoverflow.com/questions/24327637/what-is-the-most-efficient-c-method-to-split-a-string-based-on-a-particular-de
     vector<string>
     split( string const& original, char separator ){
@@ -103,7 +103,6 @@ namespace acu{
         return results;
     }
 
-    class LatticeCorrelation: public Correlation {
             pattern root;
             vector<pattern> type2;
             vector<pattern> type3;
@@ -116,7 +115,7 @@ namespace acu{
             // alle patterns nach paper hardcoded
             std::vector<string>patternTypes = {"srcIp", "srcIp:srcPrt", "srcIp:dstPrt", "srcIp:protocol", "srcIp:srcPrt:dstPrt", "srcIp:srcPrt:protocol", "srcIp:dstPrt:protocol", "srcIp:srcPrt:dstPrt:protocol"};
             // generate pattern for a certain patternType and alert. Map from alert all members according to patterntype to pattern
-            pattern generatePattern(acu::IncomingAlert a, string patternSignature, int alertsSize){
+            pattern LatticeCorrelation::generatePattern(acu::IncomingAlert a, string patternSignature, int alertsSize){
                 // map
                 pattern p;
                 ++p.count;
@@ -140,7 +139,7 @@ namespace acu{
                 p.signature = patternSignature;
                 return p;
             }
-            void generateNodesRelation(unordered_set<pattern> p1){
+            void LatticeCorrelation::generateNodesRelation(unordered_set<pattern> p1){
                 // TODO: refactor, optimize, FUCK MY ASS
                 for(auto& pattern1 : p1){
                     switch(pattern1.type){
@@ -260,15 +259,14 @@ namespace acu{
                     }
                 }
             }
-        public:
-            LatticeCorrelation(beemaster::RocksStorage* storage, std::vector<acu::Threshold>* thres): acu::Correlation::Correlation(storage, thres){}
+            //LatticeCorrelation(beemaster::RocksStorage* storage, std::vector<acu::Threshold>* thres): acu::Correlation::Correlation(storage, thres){}
 
-            OutgoingAlert* Invoke(){
+            OutgoingAlert* LatticeCorrelation::Invoke(){
                 //this->correlate();
                 auto o = acu::OutgoingAlert("test", std::chrono::system_clock::now()) ;
                 return &o;
             }
-            unordered_set<pattern> correlate(vector<acu::IncomingAlert> alerts, int threshold){
+            unordered_set<pattern> LatticeCorrelation::correlate(vector<acu::IncomingAlert> alerts, int threshold){
                 // init set of patterns that will be returned
                 unordered_set<pattern> patterns;
                 // init lattices indexed by ip. Here a request to storage needs to be done
@@ -323,7 +321,7 @@ namespace acu{
             return patterns;
             }
             
-            unordered_set<pattern> latticeCompression(unordered_set<pattern> lattice_ip, int threshold){
+            unordered_set<pattern> LatticeCorrelation::latticeCompression(unordered_set<pattern> lattice_ip, int threshold){
                 unordered_set<pattern> patterns;
                 std::vector<pattern> nodes;
                 this->generateNodesRelation(lattice_ip);
@@ -345,7 +343,6 @@ namespace acu{
                 }
                 return patterns;            
             }            
-    };
 }
 /**
 int main(){
