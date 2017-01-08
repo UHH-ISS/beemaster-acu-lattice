@@ -46,4 +46,6 @@ CTestTestfile.cmake
 # Ignore build folders
 cmake-build-debug/
 build/
-
+.ycm_extra_conf.py
+*.swp
+*.swo

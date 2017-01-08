@@ -39,7 +39,7 @@ include_directories(BEFORE ${ACU_INCLUDE_DIR})
 set(LINK_LIBS ${LINK_LIBS} ${ACU_LIBRARY})
 
 # Add our include directory
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src)
 
 # Add sub directories
 add_subdirectory(src)
