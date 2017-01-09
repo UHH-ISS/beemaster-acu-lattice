@@ -162,8 +162,9 @@ TEST_CASE("Testing LatticeCorrelation", "[lattieCorrelation]") {
     }
     SECTION("Building Nodes Relation"){
         latCorr.generateNodesRelation(pattern_set);
-        //beemaster::pattern root;
-        //REQUIRE(root.srcIp == "127.0.0.1"); 
+        for(auto pattern : pattern_set){
+            //TODO Compare stuff here. Especially relations!        
+        }
     }
 
     SECTION("Correlation"){
