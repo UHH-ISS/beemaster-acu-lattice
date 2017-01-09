@@ -28,6 +28,8 @@ TEST_CASE("Testing LatticeCorrelation", "[lattieCorrelation]") {
     // Create LatticeCorrelation instance
     auto latCorr = beemaster::LatticeCorrelation(&db, &thres);
     
+    //create set
+    std::unordered_set<beemaster::pattern> pattern_set = {}; 
     // generate type1 pattern
     beemaster::pattern p1 = latCorr.generatePattern(alert, "srcIp", 1);
     SECTION("Pattern Generation") {
@@ -43,6 +45,7 @@ TEST_CASE("Testing LatticeCorrelation", "[lattieCorrelation]") {
         REQUIRE(p1.parents.empty());
         REQUIRE(p1.children.empty());
         REQUIRE(p1.remaining == 0);
+        pattern_set.insert(p1);
 
         //generate type2 pattern
         p1 = latCorr.generatePattern(alert, "srcIp:srcPrt", 1);
@@ -58,7 +61,8 @@ TEST_CASE("Testing LatticeCorrelation", "[lattieCorrelation]") {
         REQUIRE(p1.parents.empty());
         REQUIRE(p1.children.empty());
         REQUIRE(p1.remaining == 0);
-        
+        pattern_set.insert(p1);
+       
         //generate type3 pattern
         p1 = latCorr.generatePattern(alert, "srcIp:dstPrt", 1);
         REQUIRE(p1.srcIp == "127.0.0.1");
@@ -73,6 +77,7 @@ TEST_CASE("Testing LatticeCorrelation", "[lattieCorrelation]") {
         REQUIRE(p1.parents.empty());
         REQUIRE(p1.children.empty());
         REQUIRE(p1.remaining == 0);
+        pattern_set.insert(p1);
 
         //generate type4 pattern
         p1 = latCorr.generatePattern(alert, "srcIp:protocol", 1);
@@ -88,6 +93,7 @@ TEST_CASE("Testing LatticeCorrelation", "[lattieCorrelation]") {
         REQUIRE(p1.parents.empty());
         REQUIRE(p1.children.empty());
         REQUIRE(p1.remaining == 0);
+        pattern_set.insert(p1);
 
         //generate type5 pattern
         p1 = latCorr.generatePattern(alert, "srcIp:srcPrt:dstPrt", 1);
@@ -103,6 +109,7 @@ TEST_CASE("Testing LatticeCorrelation", "[lattieCorrelation]") {
         REQUIRE(p1.parents.empty());
         REQUIRE(p1.children.empty());
         REQUIRE(p1.remaining == 0);
+        pattern_set.insert(p1);
 
         //generate type6 pattern
         p1 = latCorr.generatePattern(alert, "srcIp:srcPrt:protocol", 1);
@@ -118,6 +125,7 @@ TEST_CASE("Testing LatticeCorrelation", "[lattieCorrelation]") {
         REQUIRE(p1.parents.empty());
         REQUIRE(p1.children.empty());
         REQUIRE(p1.remaining == 0);
+        pattern_set.insert(p1);
 
         //generate type7 pattern
         p1 = latCorr.generatePattern(alert, "srcIp:dstPrt:protocol", 1);
@@ -133,6 +141,7 @@ TEST_CASE("Testing LatticeCorrelation", "[lattieCorrelation]") {
         REQUIRE(p1.parents.empty());
         REQUIRE(p1.children.empty());
         REQUIRE(p1.remaining == 0);
+        pattern_set.insert(p1);
 
         //generate type8 pattern
         p1 = latCorr.generatePattern(alert, "srcIp:srcPrt:dstPrt:protocol", 1);
@@ -141,17 +150,25 @@ TEST_CASE("Testing LatticeCorrelation", "[lattieCorrelation]") {
         REQUIRE(p1.dstPrt == 9090);
         REQUIRE(p1.protocol == "TCP");
         REQUIRE(p1.type == 8);
-        REQUIRE(!p1.isLeaf);
+        REQUIRE(p1.isLeaf);
         REQUIRE(p1.signature == "srcIp:srcPrt:dstPrt:protocol");
         REQUIRE(p1.support == 1);
         REQUIRE(p1.count == 1);
         REQUIRE(p1.parents.empty());
         REQUIRE(p1.children.empty());
         REQUIRE(p1.remaining == 0);
+        pattern_set.insert(p1);
+        REQUIRE(pattern_set.size() == 8);
+    }
+    SECTION("Building Nodes Relation"){
+        latCorr.generateNodesRelation(pattern_set);
+        //beemaster::pattern root;
+        //REQUIRE(root.srcIp == "127.0.0.1"); 
     }
 
     SECTION("Correlation"){
-    
+        std::vector<acu::IncomingAlert> alerts = {alert};
+        //latCorr.correlate(alerts, t.count);
     }
 }
 

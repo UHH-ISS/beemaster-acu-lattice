@@ -20,17 +20,6 @@
 using namespace std;
 // hash func for unordered_set
 namespace std{
-    template<> struct hash<beemaster::pattern> {
-        std::size_t operator()(const beemaster::pattern& k) const{
-            // Compute individual hash values for first,
-            // second and third and combine them using XOR
-            // and bit shifting:
-            return (hash<string>()(k.srcIp)
-                    ^ hash<int>()(k.srcPrt)
-                    ^ hash<int>()(k.dstPrt)
-                    ^ hash<string>()(k.protocol)) ;
-        }
-    };    
     // Merge any unordered_set<pattern> instances
     unordered_set<beemaster::pattern> merge_set(const std::vector<unordered_set<beemaster::pattern>>& p){
         unordered_set<beemaster::pattern> setUnion = {};
@@ -118,6 +107,9 @@ namespace beemaster{
         }
         ptrdiff_t pos = find(patternTypes.begin(), patternTypes.end(), patternSignature) - patternTypes.begin();
         p.type = pos+1;
+        if(p.type == 8){
+            p.isLeaf = true;
+        }
         p.signature = patternSignature;
         return p;
     }
