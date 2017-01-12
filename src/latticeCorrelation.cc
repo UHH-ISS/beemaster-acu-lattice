@@ -88,148 +88,80 @@ namespace beemaster{
     // alle patterns nach paper hardcoded
     std::vector<string> patternTypes = {"srcIp", "srcIp:srcPrt", "srcIp:dstPrt", "srcIp:protocol", "srcIp:srcPrt:dstPrt", "srcIp:srcPrt:protocol", "srcIp:dstPrt:protocol", "srcIp:srcPrt:dstPrt:protocol"};
     // generate pattern for a certain patternType and alert. Map from alert all members according to patterntype to pattern
-    beemaster::pattern beemaster::LatticeCorrelation::generatePattern(acu::IncomingAlert a, string patternSignature, int alertsSize){
-        beemaster::pattern p;
-        ++p.count;
-        p.support = p.count / float(alertsSize);
+    beemaster::pattern* beemaster::LatticeCorrelation::generatePattern(acu::IncomingAlert a, string patternSignature, int alertsSize){
+        beemaster::pattern* p = new beemaster::pattern;
+        //beemaster::pattern p2;
+        //p = &p2;
+        p->count = p->count+1;
+        p->support = p->count / float(alertsSize);
         auto elements = split(patternSignature, ':');
         for (auto element : elements){
             //TODO refactor looks shitty
             if(element == "srcIp"){
-                p.srcIp = a.source_ip();
+                p->srcIp = a.source_ip();
             } else if (element == "srcPrt"){
-                p.srcPrt = a.source_port();
+                p->srcPrt = a.source_port();
             } else if (element == "dstPrt"){
-                p.dstPrt = a.destination_port();
+                p->dstPrt = a.destination_port();
             } else if (element == "protocol"){
-                p.protocol = a.protocol();
+                p->protocol = a.protocol();
             }
         }
         ptrdiff_t pos = find(patternTypes.begin(), patternTypes.end(), patternSignature) - patternTypes.begin();
-        p.type = pos+1;
-        if(p.type == 8){
-            p.isLeaf = true;
+        p->type = pos+1;
+        if(p->type == 8){
+            p->isLeaf = true;
         }
-        p.signature = patternSignature;
+        p->signature = patternSignature;
         return p;
     }
-    void beemaster::LatticeCorrelation::generateNodesRelation(unordered_set<beemaster::pattern> p1){
+    void beemaster::LatticeCorrelation::generateNodesRelation(unordered_set<beemaster::pattern*>* p1){
     // TODO: refactor, optimize, FUCK MY ASS
-        for(auto& pattern1 : p1){
-            switch(pattern1.type){
-                case 1 :
-                    root = pattern1;
-                case 2:
-                    type2.push_back(pattern1);
-                case 3:
-                    type3.push_back(pattern1);
-                case 4:
-                    type4.push_back(pattern1);
-                case 5:
-                    type5.push_back(pattern1);
-                case 6:
-                    type6.push_back(pattern1);
-                case 7:
-                    type7.push_back(pattern1);
-                case 8:
-                    type8.push_back(pattern1);
-            }         
-        }
-        // Build Relations
-        // root
-        std::vector<pattern> rootChilds;
-        rootChilds.insert(rootChilds.end(), type2.begin(), type2.end());
-        rootChilds.insert(rootChilds.end(), type3.begin(), type3.end());
-        rootChilds.insert(rootChilds.end(), type4.begin(), type4.end());
-        root.children = rootChilds;
-        // all edges from 2 to 5
-        for(auto& pattern2 : type2){
-            // add just childs to pattern that haven any parent attr in common
-            for(auto& pattern5 : type5){
-                if(pattern2.srcPrt == pattern5.srcPrt){
-                    pattern2.children.push_back(pattern5);
-                    pattern5.parents.push_back(pattern2);
-                }    
-            }
-        }
-        // all edges from 2 to 6
-        for(auto& pattern2 : type2){
-            // add just childs to pattern that haven any parent attr in common
-            for(auto& pattern6 : type6){
-                if(pattern2.srcPrt == pattern6.srcPrt){
-                    pattern2.children.push_back(pattern6);
-                    pattern6.parents.push_back(pattern2);
-                }    
-            }
-        }
-        // all edges from 3 to 5
-        for(auto& pattern3 : type3){
-            // add just childs to pattern that haven any parent attr in common
-            for(auto& pattern5 : type5){
-                if(pattern3.srcPrt == pattern5.srcPrt){
-                    pattern3.children.push_back(pattern5);
-                    pattern5.parents.push_back(pattern3);
-                }    
-            }
-        }
-        // 3 to 7
-        for(auto& pattern3 : type3){
-            // add just childs to pattern that haven any parent attr in common
-            for(auto& pattern7 : type7){
-                if(pattern3.srcPrt == pattern7.srcPrt){
-                    pattern3.children.push_back(pattern7);
-                    pattern7.parents.push_back(pattern3);
-                }    
-            }
-        }
-        // 4 to 6
-        for(auto& pattern4 : type4){
-            // add just childs to pattern that haven any parent attr in common
-            for(auto& pattern6 : type6){
-                if(pattern4.srcPrt == pattern6.srcPrt){
-                    pattern4.children.push_back(pattern6);
-                    pattern6.parents.push_back(pattern4);
-                }    
-            }
-        }
-        // 4 to 7
-        for(auto& pattern4 : type4){
-            // add just childs to pattern that haven any parent attr in common
-            for(auto& pattern7 : type7){
-                if(pattern4.srcPrt == pattern7.srcPrt){
-                    pattern4.children.push_back(pattern7);
-                    pattern7.parents.push_back(pattern4);
-                }    
-            }
-        }
-        // 5 to 8
-        for(auto& pattern2 : type5){
-            // add just childs to pattern that haven any parent attr in common
-            for(auto& pattern5 : type8){
-                if(pattern2.srcPrt == pattern5.srcPrt){
-                    pattern2.children.push_back(pattern5);
-                    pattern5.parents.push_back(pattern2);
-                }    
-            }
-        }
-        // 6 to 8
-        for(auto& pattern2 : type6){
-            // add just childs to pattern that haven any parent attr in common
-            for(auto& pattern5 : type8){
-                if(pattern2.srcPrt == pattern5.srcPrt){
-                    pattern2.children.push_back(pattern5);
-                    pattern5.parents.push_back(pattern2);
-                }    
-            }
-        }
-        // 7 to 8
-        for(auto& pattern2 : type7){
-            // add just childs to pattern that haven any parent attr in common
-            for(auto& pattern5 : type8){
-                if(pattern2.srcPrt == pattern5.srcPrt){
-                    pattern2.children.push_back(pattern5);
-                    pattern5.parents.push_back(pattern2);
-                }    
+        for(auto pattern1 : *p1){
+            for(auto pattern2 : *p1){
+                if(pattern1->type == 1){
+                    if(pattern2->type == 2 || pattern2->type == 3 || pattern2->type == 4){
+                        pattern2->parents.push_back(*pattern1);
+                        pattern1->children.push_back(*pattern2);
+                    }
+                }
+                if(pattern1->type == 2){
+                    if(pattern2->type == 5 || pattern2->type == 6){
+                        printf("added!");
+                        pattern2->parents.push_back(*pattern1);
+                        pattern1->children.push_back(*pattern2);
+                    }
+                }
+                if(pattern1->type == 3){
+                    if(pattern2->type == 5 || pattern2->type == 7){
+                        pattern2->parents.push_back(*pattern1);
+                        pattern1->children.push_back(*pattern2);
+                    }
+                }
+                if(pattern1->type == 4){
+                    if(pattern2->type == 6 || pattern2->type == 7){
+                        pattern2->parents.push_back(*pattern1);
+                        pattern1->children.push_back(*pattern2);
+                    }
+                }
+                if(pattern1->type == 5){
+                    if(pattern2->type == 8){
+                        pattern2->parents.push_back(*pattern1);
+                        pattern1->children.push_back(*pattern2);
+                    }
+                }
+                if(pattern1->type == 6){
+                    if(pattern2->type == 8){
+                        pattern2->parents.push_back(*pattern1);
+                        pattern1->children.push_back(*pattern2);
+                    }
+                }
+                if(pattern1->type == 7){
+                    if(pattern2->type == 8){
+                        pattern2->parents.push_back(*pattern1);
+                        pattern1->children.push_back(*pattern2);
+                    }    
+                }
             }
         }
     }
@@ -247,9 +179,9 @@ namespace beemaster{
         // TODO: DB call here: can I regex on all keys in rocksdb?
         //
         // All Lattice, use srcIp as Key
-        unordered_map <std::string, unordered_set<pattern>> lattice = {};
+        unordered_map <std::string, unordered_set<pattern*>> lattice = {};
 
-        unordered_set<pattern> lattice_ip;
+        unordered_set<pattern*> lattice_ip;
         unordered_set<pattern> patterns_ip;
         for(std::size_t i = 0; i < alerts.size(); i++){
             acu::IncomingAlert currAlert = alerts[i];
@@ -273,12 +205,10 @@ namespace beemaster{
         // mining significant pattern instances
         for(auto& lattice_ip : lattice){
             auto lattice_ip2 = lattice_ip.second;
-            for(auto it = lattice_ip2.begin(); it != lattice_ip2.end();){
+            for(auto it : lattice_ip2){
                 if(it->support < threshold){
                     // pattern is insignificant -> delete
-                    it = lattice_ip2.erase(it);
-                } else {
-                    it++;
+                    lattice_ip2.erase(it);
                 }
             }
         }
@@ -294,10 +224,10 @@ namespace beemaster{
         return patterns;
     }
     
-    unordered_set<beemaster::pattern> beemaster::LatticeCorrelation::latticeCompression(unordered_set<beemaster::pattern> lattice_ip, int threshold){
+    unordered_set<beemaster::pattern> beemaster::LatticeCorrelation::latticeCompression(unordered_set<beemaster::pattern*> lattice_ip, int threshold){
         unordered_set<beemaster::pattern> patterns;
         std::vector<beemaster::pattern> nodes;
-        this->generateNodesRelation(lattice_ip);
+        this->generateNodesRelation(&lattice_ip);
         std::postOrder(root, nodes);
         for(beemaster::pattern pattern1 : nodes){
                     

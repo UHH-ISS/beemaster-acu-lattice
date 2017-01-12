@@ -29,142 +29,145 @@ TEST_CASE("Testing LatticeCorrelation", "[lattieCorrelation]") {
     auto latCorr = beemaster::LatticeCorrelation(&db, &thres);
     
     //create set
-    std::unordered_set<beemaster::pattern> pattern_set = {}; 
+    std::unordered_set<beemaster::pattern*> pattern_set = {}; 
     // generate type1 pattern
-    beemaster::pattern p1 = latCorr.generatePattern(alert, "srcIp", 1);
-    SECTION("Pattern Generation") {
-        REQUIRE(p1.srcIp == "127.0.0.1");
-        REQUIRE(p1.srcPrt == 0);
-        REQUIRE(p1.dstPrt == 0);
-        REQUIRE(p1.protocol == "");
-        REQUIRE(p1.type == 1);
-        REQUIRE(!p1.isLeaf);
-        REQUIRE(p1.signature == "srcIp");
-        REQUIRE(p1.support == 1);
-        REQUIRE(p1.count == 1);
-        REQUIRE(p1.parents.empty());
-        REQUIRE(p1.children.empty());
-        REQUIRE(p1.remaining == 0);
-        pattern_set.insert(p1);
+    beemaster::pattern* p1 = latCorr.generatePattern(alert, "srcIp", 1);
+    REQUIRE(p1->srcIp == "127.0.0.1");
+    REQUIRE(p1->srcPrt == 0);
+    REQUIRE(p1->dstPrt == 0);
+    REQUIRE(p1->protocol == "");
+    REQUIRE(p1->type == 1);
+    REQUIRE(!p1->isLeaf);
+    REQUIRE(p1->signature == "srcIp");
+    REQUIRE(p1->support == 1);
+    REQUIRE(p1->count == 1);
+    REQUIRE(p1->parents.empty());
+    REQUIRE(p1->children.empty());
+    REQUIRE(p1->remaining == 0);
+    pattern_set.insert(p1);
 
-        //generate type2 pattern
-        p1 = latCorr.generatePattern(alert, "srcIp:srcPrt", 1);
-        REQUIRE(p1.srcIp == "127.0.0.1");
-        REQUIRE(p1.srcPrt == 8080);
-        REQUIRE(p1.dstPrt == 0);
-        REQUIRE(p1.protocol == "");
-        REQUIRE(p1.type == 2);
-        REQUIRE(!p1.isLeaf);
-        REQUIRE(p1.signature == "srcIp:srcPrt");
-        REQUIRE(p1.support == 1);
-        REQUIRE(p1.count == 1);
-        REQUIRE(p1.parents.empty());
-        REQUIRE(p1.children.empty());
-        REQUIRE(p1.remaining == 0);
-        pattern_set.insert(p1);
-       
-        //generate type3 pattern
-        p1 = latCorr.generatePattern(alert, "srcIp:dstPrt", 1);
-        REQUIRE(p1.srcIp == "127.0.0.1");
-        REQUIRE(p1.srcPrt == 0);
-        REQUIRE(p1.dstPrt == 9090);
-        REQUIRE(p1.protocol == "");
-        REQUIRE(p1.type == 3);
-        REQUIRE(!p1.isLeaf);
-        REQUIRE(p1.signature == "srcIp:dstPrt");
-        REQUIRE(p1.support == 1);
-        REQUIRE(p1.count == 1);
-        REQUIRE(p1.parents.empty());
-        REQUIRE(p1.children.empty());
-        REQUIRE(p1.remaining == 0);
-        pattern_set.insert(p1);
+    //generate type2 pattern
+    p1= latCorr.generatePattern(alert, "srcIp:srcPrt", 1);
+    REQUIRE(p1->srcIp == "127.0.0.1");
+    REQUIRE(p1->srcPrt == 8080);
+    REQUIRE(p1->dstPrt == 0);
+    REQUIRE(p1->protocol == "");
+    REQUIRE(p1->type == 2);
+    REQUIRE(!p1->isLeaf);
+    REQUIRE(p1->signature == "srcIp:srcPrt");
+    REQUIRE(p1->support == 1);
+    REQUIRE(p1->count == 1);
+    REQUIRE(p1->parents.empty());
+    REQUIRE(p1->children.empty());
+    REQUIRE(p1->remaining == 0);
+    pattern_set.insert(p1);
+   
+    //generate type3 pattern
+    p1= latCorr.generatePattern(alert, "srcIp:dstPrt", 1);
+    REQUIRE(p1->srcIp == "127.0.0.1");
+    REQUIRE(p1->srcPrt == 0);
+    REQUIRE(p1->dstPrt == 9090);
+    REQUIRE(p1->protocol == "");
+    REQUIRE(p1->type == 3);
+    REQUIRE(!p1->isLeaf);
+    REQUIRE(p1->signature == "srcIp:dstPrt");
+    REQUIRE(p1->support == 1);
+    REQUIRE(p1->count == 1);
+    REQUIRE(p1->parents.empty());
+    REQUIRE(p1->children.empty());
+    REQUIRE(p1->remaining == 0);
+    pattern_set.insert(p1);
 
-        //generate type4 pattern
-        p1 = latCorr.generatePattern(alert, "srcIp:protocol", 1);
-        REQUIRE(p1.srcIp == "127.0.0.1");
-        REQUIRE(p1.srcPrt == 0);
-        REQUIRE(p1.dstPrt == 0);
-        REQUIRE(p1.protocol == "TCP");
-        REQUIRE(p1.type == 4);
-        REQUIRE(!p1.isLeaf);
-        REQUIRE(p1.signature == "srcIp:protocol");
-        REQUIRE(p1.support == 1);
-        REQUIRE(p1.count == 1);
-        REQUIRE(p1.parents.empty());
-        REQUIRE(p1.children.empty());
-        REQUIRE(p1.remaining == 0);
-        pattern_set.insert(p1);
+    //generate type4 pattern
+    p1= latCorr.generatePattern(alert, "srcIp:protocol", 1);
+    REQUIRE(p1->srcIp == "127.0.0.1");
+    REQUIRE(p1->srcPrt == 0);
+    REQUIRE(p1->dstPrt == 0);
+    REQUIRE(p1->protocol == "TCP");
+    REQUIRE(p1->type == 4);
+    REQUIRE(!p1->isLeaf);
+    REQUIRE(p1->signature == "srcIp:protocol");
+    REQUIRE(p1->support == 1);
+    REQUIRE(p1->count == 1);
+    REQUIRE(p1->parents.empty());
+    REQUIRE(p1->children.empty());
+    REQUIRE(p1->remaining == 0);
+    pattern_set.insert(p1);
 
-        //generate type5 pattern
-        p1 = latCorr.generatePattern(alert, "srcIp:srcPrt:dstPrt", 1);
-        REQUIRE(p1.srcIp == "127.0.0.1");
-        REQUIRE(p1.srcPrt == 8080);
-        REQUIRE(p1.dstPrt == 9090);
-        REQUIRE(p1.protocol == "");
-        REQUIRE(p1.type == 5);
-        REQUIRE(!p1.isLeaf);
-        REQUIRE(p1.signature == "srcIp:srcPrt:dstPrt");
-        REQUIRE(p1.support == 1);
-        REQUIRE(p1.count == 1);
-        REQUIRE(p1.parents.empty());
-        REQUIRE(p1.children.empty());
-        REQUIRE(p1.remaining == 0);
-        pattern_set.insert(p1);
+    //generate type5 pattern
+    p1 = latCorr.generatePattern(alert, "srcIp:srcPrt:dstPrt", 1);
+    REQUIRE(p1->srcIp == "127.0.0.1");
+    REQUIRE(p1->srcPrt == 8080);
+    REQUIRE(p1->dstPrt == 9090);
+    REQUIRE(p1->protocol == "");
+    REQUIRE(p1->type == 5);
+    REQUIRE(!p1->isLeaf);
+    REQUIRE(p1->signature == "srcIp:srcPrt:dstPrt");
+    REQUIRE(p1->support == 1);
+    REQUIRE(p1->count == 1);
+    REQUIRE(p1->parents.empty());
+    REQUIRE(p1->children.empty());
+    REQUIRE(p1->remaining == 0);
+    pattern_set.insert(p1);
 
-        //generate type6 pattern
-        p1 = latCorr.generatePattern(alert, "srcIp:srcPrt:protocol", 1);
-        REQUIRE(p1.srcIp == "127.0.0.1");
-        REQUIRE(p1.srcPrt == 8080);
-        REQUIRE(p1.dstPrt == 0);
-        REQUIRE(p1.protocol == "TCP");
-        REQUIRE(p1.type == 6);
-        REQUIRE(!p1.isLeaf);
-        REQUIRE(p1.signature == "srcIp:srcPrt:protocol");
-        REQUIRE(p1.support == 1);
-        REQUIRE(p1.count == 1);
-        REQUIRE(p1.parents.empty());
-        REQUIRE(p1.children.empty());
-        REQUIRE(p1.remaining == 0);
-        pattern_set.insert(p1);
+    //generate type6 pattern
+    p1 = latCorr.generatePattern(alert, "srcIp:srcPrt:protocol", 1);
+    REQUIRE(p1->srcIp == "127.0.0.1");
+    REQUIRE(p1->srcPrt == 8080);
+    REQUIRE(p1->dstPrt == 0);
+    REQUIRE(p1->protocol == "TCP");
+    REQUIRE(p1->type == 6);
+    REQUIRE(!p1->isLeaf);
+    REQUIRE(p1->signature == "srcIp:srcPrt:protocol");
+    REQUIRE(p1->support == 1);
+    REQUIRE(p1->count == 1);
+    REQUIRE(p1->parents.empty());
+    REQUIRE(p1->children.empty());
+    REQUIRE(p1->remaining == 0);
+    pattern_set.insert(p1);
 
-        //generate type7 pattern
-        p1 = latCorr.generatePattern(alert, "srcIp:dstPrt:protocol", 1);
-        REQUIRE(p1.srcIp == "127.0.0.1");
-        REQUIRE(p1.srcPrt == 0);
-        REQUIRE(p1.dstPrt == 9090);
-        REQUIRE(p1.protocol == "TCP");
-        REQUIRE(p1.type == 7);
-        REQUIRE(!p1.isLeaf);
-        REQUIRE(p1.signature == "srcIp:dstPrt:protocol");
-        REQUIRE(p1.support == 1);
-        REQUIRE(p1.count == 1);
-        REQUIRE(p1.parents.empty());
-        REQUIRE(p1.children.empty());
-        REQUIRE(p1.remaining == 0);
-        pattern_set.insert(p1);
+    //generate type7 pattern
+    p1 = latCorr.generatePattern(alert, "srcIp:dstPrt:protocol", 1);
+    REQUIRE(p1->srcIp == "127.0.0.1");
+    REQUIRE(p1->srcPrt == 0);
+    REQUIRE(p1->dstPrt == 9090);
+    REQUIRE(p1->protocol == "TCP");
+    REQUIRE(p1->type == 7);
+    REQUIRE(!p1->isLeaf);
+    REQUIRE(p1->signature == "srcIp:dstPrt:protocol");
+    REQUIRE(p1->support == 1);
+    REQUIRE(p1->count == 1);
+    REQUIRE(p1->parents.empty());
+    REQUIRE(p1->children.empty());
+    REQUIRE(p1->remaining == 0);
+    pattern_set.insert(p1);
 
-        //generate type8 pattern
-        p1 = latCorr.generatePattern(alert, "srcIp:srcPrt:dstPrt:protocol", 1);
-        REQUIRE(p1.srcIp == "127.0.0.1");
-        REQUIRE(p1.srcPrt == 8080);
-        REQUIRE(p1.dstPrt == 9090);
-        REQUIRE(p1.protocol == "TCP");
-        REQUIRE(p1.type == 8);
-        REQUIRE(p1.isLeaf);
-        REQUIRE(p1.signature == "srcIp:srcPrt:dstPrt:protocol");
-        REQUIRE(p1.support == 1);
-        REQUIRE(p1.count == 1);
-        REQUIRE(p1.parents.empty());
-        REQUIRE(p1.children.empty());
-        REQUIRE(p1.remaining == 0);
-        pattern_set.insert(p1);
-        REQUIRE(pattern_set.size() == 8);
-    }
-    SECTION("Building Nodes Relation"){
-        latCorr.generateNodesRelation(pattern_set);
-        for(auto pattern : pattern_set){
-            //TODO Compare stuff here. Especially relations!        
-        }
+    //generate type8 pattern
+    p1 = latCorr.generatePattern(alert, "srcIp:srcPrt:dstPrt:protocol", 1);
+    REQUIRE(p1->srcIp == "127.0.0.1");
+    REQUIRE(p1->srcPrt == 8080);
+    REQUIRE(p1->dstPrt == 9090);
+    REQUIRE(p1->protocol == "TCP");
+    REQUIRE(p1->type == 8);
+    REQUIRE(p1->isLeaf);
+    REQUIRE(p1->signature == "srcIp:srcPrt:dstPrt:protocol");
+    REQUIRE(p1->support == 1);
+    REQUIRE(p1->count == 1);
+    REQUIRE(p1->parents.empty());
+    REQUIRE(p1->children.empty());
+    REQUIRE(p1->remaining == 0);
+    pattern_set.insert(p1);
+    REQUIRE(pattern_set.size() == 8);
+    latCorr.generateNodesRelation(&pattern_set);
+    for(auto pattern : pattern_set){
+        //TODO Check all cases
+        if(pattern->type == 2){
+            for(auto child : pattern->children){
+                auto boel = child.type == 6 || child.type == 5;
+                REQUIRE(boel);
+                REQUIRE(pattern->children.size() == 2);
+            }
+        } 
     }
 
     SECTION("Correlation"){
