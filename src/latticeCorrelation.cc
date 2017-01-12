@@ -91,7 +91,7 @@ namespace beemaster{
     beemaster::pattern* beemaster::LatticeCorrelation::generatePattern(acu::IncomingAlert a, string patternSignature, int alertsSize){
         beemaster::pattern* p = new beemaster::pattern;
         //beemaster::pattern p2;
-        //p = &p2;
+        //beemaster::pattern* p = &p2;
         p->count = p->count+1;
         p->support = p->count / float(alertsSize);
         auto elements = split(patternSignature, ':');
@@ -127,39 +127,50 @@ namespace beemaster{
                 }
                 if(pattern1->type == 2){
                     if(pattern2->type == 5 || pattern2->type == 6){
-                        printf("added!");
-                        pattern2->parents.push_back(*pattern1);
-                        pattern1->children.push_back(*pattern2);
+                        if(pattern1->srcIp == pattern2->srcIp && pattern1->srcPrt == pattern2->srcPrt){
+                            pattern2->parents.push_back(*pattern1);
+                            pattern1->children.push_back(*pattern2);
+                        }
                     }
                 }
                 if(pattern1->type == 3){
                     if(pattern2->type == 5 || pattern2->type == 7){
-                        pattern2->parents.push_back(*pattern1);
-                        pattern1->children.push_back(*pattern2);
+                        if(pattern1->srcIp == pattern2->srcIp && pattern1->dstPrt == pattern2->dstPrt){
+                            pattern2->parents.push_back(*pattern1);
+                            pattern1->children.push_back(*pattern2);
+                        }
                     }
                 }
                 if(pattern1->type == 4){
                     if(pattern2->type == 6 || pattern2->type == 7){
-                        pattern2->parents.push_back(*pattern1);
-                        pattern1->children.push_back(*pattern2);
+                        if(pattern1->srcIp == pattern2->srcIp && pattern1->protocol == pattern2->protocol){
+                            pattern2->parents.push_back(*pattern1);
+                            pattern1->children.push_back(*pattern2);
+                        }
                     }
                 }
                 if(pattern1->type == 5){
                     if(pattern2->type == 8){
-                        pattern2->parents.push_back(*pattern1);
-                        pattern1->children.push_back(*pattern2);
+                        if(pattern1->srcIp == pattern2->srcIp && pattern1->srcPrt == pattern2->srcPrt && pattern1->dstPrt == pattern2->dstPrt){
+                                pattern2->parents.push_back(*pattern1);
+                                pattern1->children.push_back(*pattern2);
+                        }
                     }
                 }
                 if(pattern1->type == 6){
                     if(pattern2->type == 8){
-                        pattern2->parents.push_back(*pattern1);
-                        pattern1->children.push_back(*pattern2);
+                        if(pattern1->srcIp == pattern2->srcIp && pattern1->srcPrt == pattern2->srcPrt && pattern1->protocol == pattern2->protocol){
+                            pattern2->parents.push_back(*pattern1);
+                            pattern1->children.push_back(*pattern2);
+                        }
                     }
                 }
                 if(pattern1->type == 7){
                     if(pattern2->type == 8){
-                        pattern2->parents.push_back(*pattern1);
-                        pattern1->children.push_back(*pattern2);
+                        if(pattern1->srcIp == pattern2->srcIp && pattern1->dstPrt == pattern2->dstPrt && pattern1->protocol == pattern2->protocol){
+                            pattern2->parents.push_back(*pattern1);
+                            pattern1->children.push_back(*pattern2);
+                        }
                     }    
                 }
             }

@@ -32,7 +32,9 @@ TEST_CASE("Testing LatticeCorrelation", "[lattieCorrelation]") {
     std::unordered_set<beemaster::pattern*> pattern_set = {}; 
     // generate type1 pattern
     beemaster::pattern* p1 = latCorr.generatePattern(alert, "srcIp", 1);
+    //printf("%s\n", p1->srcIp.c_str());
     REQUIRE(p1->srcIp == "127.0.0.1");
+    //printf("%d\n", p1->srcPrt);
     REQUIRE(p1->srcPrt == 0);
     REQUIRE(p1->dstPrt == 0);
     REQUIRE(p1->protocol == "");
@@ -161,15 +163,63 @@ TEST_CASE("Testing LatticeCorrelation", "[lattieCorrelation]") {
     latCorr.generateNodesRelation(&pattern_set);
     for(auto pattern : pattern_set){
         //TODO Check all cases
+        if(pattern->type == 1){
+            for(auto child : pattern->children){
+                auto boel = child.type == 2 || child.type == 3 || child.type == 4;
+                REQUIRE(boel);
+                REQUIRE(pattern->srcIp == child.srcIp);
+                REQUIRE(pattern->parents.size() == 0);
+            }
+        }
         if(pattern->type == 2){
             for(auto child : pattern->children){
                 auto boel = child.type == 6 || child.type == 5;
                 REQUIRE(boel);
-                REQUIRE(pattern->children.size() == 2);
+                REQUIRE(pattern->srcIp == child.srcIp);
+                REQUIRE(pattern->srcPrt == child.srcPrt);
             }
-        } 
+        }
+        if(pattern->type == 3){
+            for(auto child : pattern->children){
+                auto boel = child.type == 7 || child.type == 5;
+                REQUIRE(boel);
+                REQUIRE(pattern->srcIp == child.srcIp);
+                REQUIRE(pattern->dstPrt == child.dstPrt);
+            }
+        }
+        if(pattern->type == 4){
+            for(auto child : pattern->children){
+                auto boel = child.type == 7 || child.type == 6;
+                REQUIRE(boel);
+                REQUIRE(pattern->srcIp == child.srcIp);
+                REQUIRE(pattern->protocol == child.protocol);
+            }
+        }
+        if(pattern->type == 5){
+            for(auto child : pattern->children){
+                REQUIRE(child.type == 8);
+                REQUIRE(pattern->srcIp == child.srcIp);
+                REQUIRE(pattern->srcPrt == child.srcPrt);
+                REQUIRE(pattern->dstPrt == child.dstPrt);
+            }
+        }
+        if(pattern->type == 6){
+            for(auto child : pattern->children){
+                REQUIRE(child.type == 8);
+                REQUIRE(pattern->srcIp == child.srcIp);
+                REQUIRE(pattern->srcPrt == child.srcPrt);
+                REQUIRE(pattern->protocol == child.protocol);
+            }
+        }
+        if(pattern->type == 7){
+            for(auto child : pattern->children){
+                REQUIRE(child.type == 8);
+                REQUIRE(pattern->srcIp == child.srcIp);
+                REQUIRE(pattern->protocol == child.protocol);
+                REQUIRE(pattern->dstPrt == child.dstPrt);
+            }
+        }
     }
-
     SECTION("Correlation"){
         std::vector<acu::IncomingAlert> alerts = {alert};
         //latCorr.correlate(alerts, t.count);
