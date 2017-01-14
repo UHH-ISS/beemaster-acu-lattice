@@ -30,15 +30,6 @@ namespace std{
         }
         return setUnion;
     }
-    void postOrder(const beemaster::pattern& root, vector<beemaster::pattern> nodes){    
-        if(!root.children.empty()){
-            for(auto& child : root.children){ 
-                std::postOrder(child, nodes);
-            }
-        } else if(std::find(nodes.begin(), nodes.end(), root) == nodes.end()) {
-            nodes.push_back(root);
-        } 
-    }
 }
 
 namespace beemaster{
@@ -121,55 +112,55 @@ namespace beemaster{
             for(auto pattern2 : *p1){
                 if(pattern1->type == 1){
                     if(pattern2->type == 2 || pattern2->type == 3 || pattern2->type == 4){
-                        pattern2->parents.push_back(*pattern1);
-                        pattern1->children.push_back(*pattern2);
+                        pattern2->parents.push_back(pattern1);
+                        pattern1->children.push_back(pattern2);
                     }
                 }
                 if(pattern1->type == 2){
                     if(pattern2->type == 5 || pattern2->type == 6){
                         if(pattern1->srcIp == pattern2->srcIp && pattern1->srcPrt == pattern2->srcPrt){
-                            pattern2->parents.push_back(*pattern1);
-                            pattern1->children.push_back(*pattern2);
+                            pattern2->parents.push_back(pattern1);
+                            pattern1->children.push_back(pattern2);
                         }
                     }
                 }
                 if(pattern1->type == 3){
                     if(pattern2->type == 5 || pattern2->type == 7){
                         if(pattern1->srcIp == pattern2->srcIp && pattern1->dstPrt == pattern2->dstPrt){
-                            pattern2->parents.push_back(*pattern1);
-                            pattern1->children.push_back(*pattern2);
+                            pattern2->parents.push_back(pattern1);
+                            pattern1->children.push_back(pattern2);
                         }
                     }
                 }
                 if(pattern1->type == 4){
                     if(pattern2->type == 6 || pattern2->type == 7){
                         if(pattern1->srcIp == pattern2->srcIp && pattern1->protocol == pattern2->protocol){
-                            pattern2->parents.push_back(*pattern1);
-                            pattern1->children.push_back(*pattern2);
+                            pattern2->parents.push_back(pattern1);
+                            pattern1->children.push_back(pattern2);
                         }
                     }
                 }
                 if(pattern1->type == 5){
                     if(pattern2->type == 8){
                         if(pattern1->srcIp == pattern2->srcIp && pattern1->srcPrt == pattern2->srcPrt && pattern1->dstPrt == pattern2->dstPrt){
-                                pattern2->parents.push_back(*pattern1);
-                                pattern1->children.push_back(*pattern2);
+                                pattern2->parents.push_back(pattern1);
+                                pattern1->children.push_back(pattern2);
                         }
                     }
                 }
                 if(pattern1->type == 6){
                     if(pattern2->type == 8){
                         if(pattern1->srcIp == pattern2->srcIp && pattern1->srcPrt == pattern2->srcPrt && pattern1->protocol == pattern2->protocol){
-                            pattern2->parents.push_back(*pattern1);
-                            pattern1->children.push_back(*pattern2);
+                            pattern2->parents.push_back(pattern1);
+                            pattern1->children.push_back(pattern2);
                         }
                     }
                 }
                 if(pattern1->type == 7){
                     if(pattern2->type == 8){
                         if(pattern1->srcIp == pattern2->srcIp && pattern1->dstPrt == pattern2->dstPrt && pattern1->protocol == pattern2->protocol){
-                            pattern2->parents.push_back(*pattern1);
-                            pattern1->children.push_back(*pattern2);
+                            pattern2->parents.push_back(pattern1);
+                            pattern1->children.push_back(pattern2);
                         }
                     }    
                 }
@@ -237,22 +228,22 @@ namespace beemaster{
     
     unordered_set<beemaster::pattern> beemaster::LatticeCorrelation::latticeCompression(unordered_set<beemaster::pattern*> lattice_ip, int threshold){
         unordered_set<beemaster::pattern> patterns;
-        std::vector<beemaster::pattern> nodes;
+        std::vector<beemaster::pattern*> nodes;
         this->generateNodesRelation(&lattice_ip);
-        std::postOrder(root, nodes);
-        for(beemaster::pattern pattern1 : nodes){
+        std::postOrder(root, &nodes);
+        for(auto pattern1 : nodes){
                     
-            if(pattern1.isLeaf){
-                pattern1.remaining = pattern1.support;
+            if(pattern1->isLeaf){
+                pattern1->remaining = pattern1->support;
             } else {
-                pattern1.remaining = 0;
-                for(beemaster::pattern pChild : pattern1.children){
-                    pattern1.remaining += pChild.remaining;
+                pattern1->remaining = 0;
+                for(auto pChild : pattern1->children){
+                    pattern1->remaining += pChild->remaining;
                 }
             }
-            if(pattern1.remaining >= threshold) {
-                patterns.insert(pattern1);
-                pattern1.remaining = 0;
+            if(pattern1->remaining >= threshold) {
+                patterns.insert(*pattern1);
+                pattern1->remaining = 0;
             }
         }
         return patterns;            

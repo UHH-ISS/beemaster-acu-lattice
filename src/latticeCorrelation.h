@@ -18,8 +18,8 @@ namespace beemaster {
             int type;
             std::string signature;
             bool isLeaf;
-            std::vector<pattern> parents;
-            std::vector<pattern> children;
+            std::vector<pattern*> parents;
+            std::vector<pattern*> children;
             inline bool operator==(const pattern& p1) const;
             pattern(); 
     };
@@ -50,7 +50,16 @@ namespace std{
     };
     // Merge any unordered_set<pattern> instances
     unordered_set<beemaster::pattern> merge_set(const std::vector<unordered_set<beemaster::pattern>>& p);
-    void postOrder(const beemaster::pattern& root, vector<beemaster::pattern> nodes);
+    inline void postOrder(beemaster::pattern& root, vector<beemaster::pattern*>* nodes){   
+        if(!root.children.empty()){
+            for(auto& child : root.children){ 
+                std::postOrder(*child, nodes);
+            }
+        } if(std::find(nodes->begin(), nodes->end(), &root) == nodes->end()) {
+            nodes->push_back(&root);
+        } 
+    }
+
 }   
 
 #endif // ACU_IMPL_LATTICECORRELATION_H
