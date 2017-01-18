@@ -21,11 +21,11 @@ using namespace std;
 // hash func for unordered_set
 namespace std{
     // Merge any unordered_set<pattern> instances
-    unordered_set<beemaster::pattern> merge_set(const std::vector<unordered_set<beemaster::pattern>>& p){
-        unordered_set<beemaster::pattern> setUnion = {};
+    unordered_set<beemaster::pattern*>* merge_set(std::vector<unordered_set<beemaster::pattern*>*>& p){
+        unordered_set<beemaster::pattern*>* setUnion = new unordered_set<beemaster::pattern*>;
         for(auto pattern_set : p){
-            for(beemaster::pattern p1 : pattern_set){
-                setUnion.insert(p1);    
+            for(auto p1 : *pattern_set){
+                setUnion->insert(p1);    
             }
         }
         return setUnion;
@@ -173,52 +173,61 @@ namespace beemaster{
         auto* o = new acu::OutgoingAlert("test", std::chrono::system_clock::now()) ;
         return o;
     }
-    unordered_set<beemaster::pattern> beemaster::LatticeCorrelation::correlate(vector<acu::IncomingAlert> alerts, int threshold){
+    unordered_set<beemaster::pattern*>* beemaster::LatticeCorrelation::correlate(vector<acu::IncomingAlert*> alerts, int threshold){
         // init set of patterns that will be returned
-        unordered_set<pattern> patterns;
+        unordered_set<pattern*>* patterns;
         // init lattices indexed by ip. Here a request to storage needs to be done
         // e.g get all entries from db holen, ip is key, pattern is value
         // TODO: DB call here: can I regex on all keys in rocksdb?
         //
         // All Lattice, use srcIp as Key
-        unordered_map <std::string, unordered_set<pattern*>> lattice = {};
+        unordered_map <std::string, unordered_set<pattern*>*> lattice = {};
 
-        unordered_set<pattern*> lattice_ip;
+        unordered_set<pattern*>* lattice_ip;
         unordered_set<pattern> patterns_ip;
-        for(std::size_t i = 0; i < alerts.size(); i++){
-            acu::IncomingAlert currAlert = alerts[i];
-            string ip = currAlert.source_ip();
+        for(auto alert : alerts){
+            printf("for:188\n");
+            string ip = alert->source_ip();
             int it = lattice.count(ip);
             if(it == 0){
+                printf("create lattice\n");
                 // create lattice with ip
-                lattice_ip = {};
+                lattice_ip = new unordered_set<pattern*>;
             } else {
                 // get element from lattice
                 lattice_ip = lattice.find(ip)->second;
             }
             // generate pattern, for all pattern types
             for(string patternType : patternTypes){
+                printf("generate pattern\n");
+                printf("alertSize: %d\n", alerts.size());
                 //TODO: If pattern exists just update support val
-                lattice_ip.insert(generatePattern(currAlert, patternType, alerts.size())) ;
+                lattice_ip->insert(generatePattern(*alert, patternType, alerts.size()));
             }
+            printf("add to lattice\n");
             lattice[ip] = lattice_ip;
         }
         // filtering process
         // mining significant pattern instances
         for(auto& lattice_ip : lattice){
+            printf("mining\n");
             auto lattice_ip2 = lattice_ip.second;
-            for(auto it : lattice_ip2){
+            for(auto it : *lattice_ip2){
+                printf("go over all lattice\n");
                 if(it->support < threshold){
                     // pattern is insignificant -> delete
-                    lattice_ip2.erase(it);
+                    // What about parents and children?
+                    printf("erase");
+                    lattice_ip2->erase(it);
                 }
             }
         }
         // filtering redundant pattern instances
         // init non-redundant significant pattern instance set
         for(auto& lattice_ip : lattice){
+            printf("filter pattern");
             // compress revised Lattice lattice_ip using threshold
-            std::vector<unordered_set<beemaster::pattern>> sets;
+            std::vector<unordered_set<beemaster::pattern*>*> sets;
             sets.push_back(patterns);
             sets.push_back(this->latticeCompression(lattice_ip.second, threshold));
             patterns = merge_set(sets);
@@ -226,13 +235,22 @@ namespace beemaster{
         return patterns;
     }
     
-    unordered_set<beemaster::pattern> beemaster::LatticeCorrelation::latticeCompression(unordered_set<beemaster::pattern*> lattice_ip, int threshold){
-        unordered_set<beemaster::pattern> patterns;
+    unordered_set<beemaster::pattern*>* beemaster::LatticeCorrelation::latticeCompression(unordered_set<beemaster::pattern*>* lattice_ip, int threshold){
+        unordered_set<beemaster::pattern*>* patterns = new unordered_set<beemaster::pattern*>;
         std::vector<beemaster::pattern*> nodes;
-        this->generateNodesRelation(&lattice_ip);
-        std::postOrder(root, &nodes);
+        this->generateNodesRelation(lattice_ip);
+        // print test
+        beemaster::pattern* root;
+        for(auto pattern : *lattice_ip){
+            //printf("%d has %d children\n", pattern->type, pattern->children.size());
+            if(pattern->type == 1){
+                root = pattern;
+                break;
+            }
+        }
+        std::postOrder(*root, &nodes);
+
         for(auto pattern1 : nodes){
-                    
             if(pattern1->isLeaf){
                 pattern1->remaining = pattern1->support;
             } else {
@@ -242,7 +260,7 @@ namespace beemaster{
                 }
             }
             if(pattern1->remaining >= threshold) {
-                patterns.insert(*pattern1);
+                patterns->insert(pattern1);
                 pattern1->remaining = 0;
             }
         }
