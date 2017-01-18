@@ -170,8 +170,8 @@ namespace beemaster{
 
     acu::OutgoingAlert* beemaster::LatticeCorrelation::Invoke(){
         //this->correlate();
-        auto o = acu::OutgoingAlert("test", std::chrono::system_clock::now()) ;
-        return &o;
+        auto* o = new acu::OutgoingAlert("test", std::chrono::system_clock::now()) ;
+        return o;
     }
     unordered_set<beemaster::pattern> beemaster::LatticeCorrelation::correlate(vector<acu::IncomingAlert> alerts, int threshold){
         // init set of patterns that will be returned
