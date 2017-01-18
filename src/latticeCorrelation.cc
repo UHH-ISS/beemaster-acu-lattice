@@ -21,11 +21,14 @@ using namespace std;
 // hash func for unordered_set
 namespace std{
     // Merge any unordered_set<pattern> instances
-    unordered_set<beemaster::pattern*>* merge_set(std::vector<unordered_set<beemaster::pattern*>*>& p){
+    unordered_set<beemaster::pattern*>* merge_set(std::vector<unordered_set<beemaster::pattern*>*> p){
         unordered_set<beemaster::pattern*>* setUnion = new unordered_set<beemaster::pattern*>;
-        for(auto pattern_set : p){
-            for(auto p1 : *pattern_set){
-                setUnion->insert(p1);    
+        for(auto p_set : p){
+            printf("it1\n");
+            for(auto& p1 : *p_set){
+                printf("it2\n");
+                setUnion->insert(p1);
+                printf("was inserted!\n");    
             }
         }
         return setUnion;
@@ -225,13 +228,16 @@ namespace beemaster{
         // filtering redundant pattern instances
         // init non-redundant significant pattern instance set
         for(auto& lattice_ip : lattice){
-            printf("filter pattern");
+            printf("filter pattern\n");
             // compress revised Lattice lattice_ip using threshold
-            std::vector<unordered_set<beemaster::pattern*>*> sets;
-            sets.push_back(patterns);
-            sets.push_back(this->latticeCompression(lattice_ip.second, threshold));
-            patterns = merge_set(sets);
+            std::vector<unordered_set<beemaster::pattern*>*>* sets = new std::vector<unordered_set<beemaster::pattern*>*>;
+            sets->push_back(patterns);
+            printf("compress\n");
+            sets->push_back(this->latticeCompression(lattice_ip.second, threshold));
+            patterns = merge_set(*sets);
+            printf("merge\n");
         }
+        printf("return\n");
         return patterns;
     }
     

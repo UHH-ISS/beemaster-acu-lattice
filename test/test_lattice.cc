@@ -263,6 +263,7 @@ TEST_CASE("Testing LatticeCorrelation", "[lattieCorrelation]") {
     }
     SECTION("CORRELATE"){ 
         // correlate
+        // TODO: Valgrind error
         std::vector<acu::IncomingAlert*> alerts = {&alert};
         auto pattern2 = latCorr.correlate(alerts, thres[0].count);
     }
