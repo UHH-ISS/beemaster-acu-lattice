@@ -29,7 +29,7 @@ namespace beemaster {
     void generateNodesRelation(std::unordered_set<pattern*>* pattern);
 
 
-            LatticeCorrelation(beemaster::RocksStorage* storage, std::vector<acu::Threshold>* thresholds) : acu::Correlation(storage, thresholds) {};
+            LatticeCorrelation(beemaster::RocksStorage<int>* storage, std::vector<acu::Threshold>* thresholds) : acu::Correlation(storage, thresholds) {};
             std::unordered_set<pattern*>* correlate(std::vector<acu::IncomingAlert*> alerts, int threshold);
             std::unordered_set<pattern*>* latticeCompression(std::unordered_set<pattern*>* lattice, int threshold);
             acu::OutgoingAlert* Invoke();

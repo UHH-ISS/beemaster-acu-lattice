@@ -22,12 +22,12 @@ using namespace std;
 namespace std{
     // Merge any unordered_set<pattern> instances
     unordered_set<beemaster::pattern*>* merge_set(std::vector<unordered_set<beemaster::pattern*>*> p){
-        unordered_set<beemaster::pattern*>* setUnion = new unordered_set<beemaster::pattern*>;
+        auto setUnion = new unordered_set<beemaster::pattern*>;
         for(auto p_set : p){
             printf("it1\n");
-            for(auto& p1 : *p_set){
+            for(auto& p1 : *p_set) {
                 printf("it2\n");
-                //setUnion->insert(p1);
+                setUnion->insert(p1);
                 printf("was inserted!\n");    
             }
         }
@@ -169,7 +169,7 @@ namespace beemaster{
     }
     unordered_set<beemaster::pattern*>* beemaster::LatticeCorrelation::correlate(vector<acu::IncomingAlert*> alerts, int threshold){
         // init set of patterns that will be returned
-        unordered_set<pattern*>* patterns;
+        auto patterns = new unordered_set<pattern*>*;
         // init lattices indexed by ip. Here a request to storage needs to be done
         // e.g get all entries from db holen, ip is key, pattern is value
         // TODO: DB call here: can I regex on all keys in rocksdb?
