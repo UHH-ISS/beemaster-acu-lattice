@@ -27,10 +27,11 @@ namespace std{
             printf("it1\n");
             for(auto& p1 : *p_set){
                 printf("it2\n");
-                setUnion->insert(p1);
+                //setUnion->insert(p1);
                 printf("was inserted!\n");    
             }
         }
+        printf("return");
         return setUnion;
     }
 }
@@ -69,16 +70,6 @@ namespace beemaster{
         results.push_back( string( start, next ) );
         return results;
     }
-
-    beemaster::pattern root;
-    vector<beemaster::pattern> type2;
-    vector<beemaster::pattern> type3;
-    vector<beemaster::pattern> type4;
-    vector<beemaster::pattern> type5;
-    vector<beemaster::pattern> type6;
-    vector<beemaster::pattern> type7;
-    vector<beemaster::pattern> type8;
-    // struct dbInfos = 0;
     // alle patterns nach paper hardcoded
     std::vector<string> patternTypes = {"srcIp", "srcIp:srcPrt", "srcIp:dstPrt", "srcIp:protocol", "srcIp:srcPrt:dstPrt", "srcIp:srcPrt:protocol", "srcIp:dstPrt:protocol", "srcIp:srcPrt:dstPrt:protocol"};
     // generate pattern for a certain patternType and alert. Map from alert all members according to patterntype to pattern
