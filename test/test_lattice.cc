@@ -18,7 +18,7 @@ TEST_CASE("Testing LatticeCorrelation", "[lattieCorrelation]") {
     auto alert = acu::IncomingAlert(topic, msg);
 
     // Open DB
-    beemaster::RocksStorage db = beemaster::RocksStorage("/tmp/test");
+    beemaster::RocksStorage<int> db = beemaster::RocksStorage<int>("/tmp/test");
 
     // Create Threshold
     std::vector<acu::Threshold> thres = {};
@@ -221,7 +221,7 @@ TEST_CASE("Testing LatticeCorrelation", "[lattieCorrelation]") {
             }
         }
         // postOrder Test
-        std::vector<beemaster::pattern*>* nodes = new std::vector<beemaster::pattern*>;
+        auto nodes = new std::vector<beemaster::pattern*>;
         beemaster::pattern* root;
         // get root
         for(auto pattern : *pattern_set){
