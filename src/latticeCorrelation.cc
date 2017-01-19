@@ -169,7 +169,7 @@ namespace beemaster{
     }
     unordered_set<beemaster::pattern*>* beemaster::LatticeCorrelation::correlate(vector<acu::IncomingAlert*> alerts, int threshold){
         // init set of patterns that will be returned
-        auto patterns = new unordered_set<pattern*>*;
+        auto patterns = new unordered_set<pattern*>;
         // init lattices indexed by ip. Here a request to storage needs to be done
         // e.g get all entries from db holen, ip is key, pattern is value
         // TODO: DB call here: can I regex on all keys in rocksdb?
