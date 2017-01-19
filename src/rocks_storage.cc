@@ -7,7 +7,9 @@
 #include "rocks_storage.h"
 #include <rocksdb/merge_operator.h>
 
+
 namespace beemaster {
+    template <class count_t>
     class IncrementMergeOperator : public rocksdb::AssociativeMergeOperator {
         public:
             /// Gives the client a way to express the read -> modify -> write semantics
@@ -24,15 +26,19 @@ namespace beemaster {
             /// All values passed in will be client-specific values. So if this method
             /// returns false, it is because client specified bad data or there was
             /// internal corruption. The client should assume that this will be treated
-            /// as an error by the library.
+            /// as an error by the library
+// gcc.gnu.org/onlinedocs/gcc/Diagnostic-Pragmas.html
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-parameter"
             virtual bool Merge(const rocksdb::Slice& key,
                                const rocksdb::Slice* existing_value,
                                const rocksdb::Slice& value,
                                std::string* new_value,
                                rocksdb::Logger* logger) const override {
-                auto count_e = existing_value != nullptr ? *existing_value->data() : 0;
-                auto count_n = *value.data();
-                auto val = count_e + count_n;
+#pragma GCC diagnostic pop
+                count_t count_e = existing_value != nullptr ? *(count_t*)existing_value->data() : 0;
+                count_t count_n = *(count_t*)value.data();
+                count_t val = count_e + count_n;
                 new_value->append((char*)&val, sizeof(val));
                 return true;
             }
@@ -40,35 +46,49 @@ namespace beemaster {
             virtual const char* Name() const override { return "IncrementMergeOperator"; }
     };
 
-    RocksStorage::RocksStorage(std::string db_name)
+    template <class count_t>
+    RocksStorage<count_t>::RocksStorage(std::string db_name)
         : acu::Storage::Storage(db_name) {
             Options.create_if_missing = true;
-            Options.merge_operator.reset(new IncrementMergeOperator);
+            Options.merge_operator.reset(new IncrementMergeOperator<count_t>);
             // TODO what about unified read/writeOptions?
             rocksdb::Status status = rocksdb::DB::Open(Options, db_name, &Database);
             assert(status.ok());
         }
 
     // Gracefully closes DB
-    RocksStorage::~RocksStorage() {
+    template <class count_t>
+    RocksStorage<count_t>::~RocksStorage() {
         delete Database;
     }
 
-    void RocksStorage::Persist(const acu::IncomingAlert *alert) {
+    template <class count_t>
+    void RocksStorage<count_t>::Persist(const acu::IncomingAlert *alert) {
         assert(alert);
         // noop
     }
 
-    template<typename count_t>
-    bool RocksStorage::Increment(const std::string key, const count_t value) {
+    template <class count_t>
+    bool RocksStorage<count_t>::Set(const std::string key, const count_t value){
+        rocksdb::Status status = Database->Put(rocksdb::WriteOptions(), key, rocksdb::Slice((char*)&value, sizeof(value)));
+        return status.ok();
+    }
+
+    template <class count_t>
+    bool RocksStorage<count_t>::Increment(const std::string key, const count_t value) {
         rocksdb::Status status = Database->Merge(rocksdb::WriteOptions(), key, rocksdb::Slice((char*)&value, sizeof(value)));
         return status.ok();
     }
 
-    template<typename count_t>
-    count_t RocksStorage::Get(const std::string key) {
+    template <class count_t>
+    count_t RocksStorage<count_t>::Get(const std::string key) {
         std::string str = "";
         Database->Get(rocksdb::ReadOptions(), key, &str);
         return *((count_t*)str.data());
+    }
+
+    template<class count_t>
+    rocksdb::Iterator* RocksStorage<count_t>::GetIterator() {
+        return Database->NewIterator(rocksdb::ReadOptions());
     }
 }

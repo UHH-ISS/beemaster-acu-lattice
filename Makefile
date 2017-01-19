@@ -8,12 +8,12 @@ build:
 	cd $(BUILD_DIR)
 	# TODO extract options correctly
 	cmake -DCMAKE_BUILD_TYPE=Debug ..
-	cmake --build .
+	cmake --build . -- -j 4
 
 test: build
-	# TODO to be tested!
 	cd $(BUILD_DIR)
-	cmake --target test .
+	cmake --build . --target tests -- -j 4
+	./test/tests
 
 # TODO add target to pull lib up
 
