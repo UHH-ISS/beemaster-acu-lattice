@@ -24,14 +24,14 @@ namespace std{
     unordered_set<beemaster::pattern*>* merge_set(std::vector<unordered_set<beemaster::pattern*>*> p){
         auto setUnion = new unordered_set<beemaster::pattern*>;
         for(auto p_set : p){
-            printf("it1\n");
+            //printf("it1\n");
             for(auto& p1 : *p_set) {
-                printf("it2\n");
+                //printf("it2\n");
                 setUnion->insert(p1);
-                printf("was inserted!\n");    
+                //printf("was inserted!\n");    
             }
         }
-        printf("return");
+        //printf("return");
         return setUnion;
     }
 }
@@ -50,6 +50,7 @@ namespace beemaster{
         this->isLeaf = false;
         this->parents = {};
         this->children = {};
+        this->key = "";
     } 
     inline bool beemaster::pattern::operator==(const beemaster::pattern& p1) const{
         return hash<beemaster::pattern>()(p1) == hash<beemaster::pattern>()(*this);
@@ -75,25 +76,28 @@ namespace beemaster{
     // generate pattern for a certain patternType and alert. Map from alert all members according to patterntype to pattern
     beemaster::pattern* beemaster::LatticeCorrelation::generatePattern(acu::IncomingAlert a, string patternSignature, int alertsSize){
         beemaster::pattern* p = new beemaster::pattern;
-        //beemaster::pattern p2;
-        //beemaster::pattern* p = &p2;
-        p->count = p->count+1;
-        p->support = p->count / float(alertsSize);
+        ptrdiff_t pos = find(patternTypes.begin(), patternTypes.end(), patternSignature) - patternTypes.begin();
+        p->type = pos+1;
+        p->key = std::to_string(p->type);
         auto elements = split(patternSignature, ':');
         for (auto element : elements){
             //TODO refactor looks shitty
             if(element == "srcIp"){
                 p->srcIp = a.source_ip();
+                p->key += ":" +p->srcIp;
             } else if (element == "srcPrt"){
                 p->srcPrt = a.source_port();
+                p->key += ":" + std::to_string(p->srcPrt);
             } else if (element == "dstPrt"){
                 p->dstPrt = a.destination_port();
+                p->key += ":" + std::to_string(p->dstPrt);
             } else if (element == "protocol"){
                 p->protocol = a.protocol();
+                p->key += ":" + p->protocol;
             }
         }
-        ptrdiff_t pos = find(patternTypes.begin(), patternTypes.end(), patternSignature) - patternTypes.begin();
-        p->type = pos+1;
+        p->count = p->count+1;
+        p->support = p->count / float(alertsSize);
         if(p->type == 8){
             p->isLeaf = true;
         }
@@ -180,11 +184,11 @@ namespace beemaster{
         unordered_set<pattern*>* lattice_ip;
         unordered_set<pattern> patterns_ip;
         for(auto alert : alerts){
-            printf("for:188\n");
+            //printf("for:188\n");
             string ip = alert->source_ip();
             int it = lattice.count(ip);
             if(it == 0){
-                printf("create lattice\n");
+                //printf("create lattice\n");
                 // create lattice with ip
                 lattice_ip = new unordered_set<pattern*>;
             } else {
@@ -193,42 +197,56 @@ namespace beemaster{
             }
             // generate pattern, for all pattern types
             for(string patternType : patternTypes){
-                printf("generate pattern\n");
-                printf("alertSize: %d\n", alerts.size());
+                //printf("generate pattern\n");
+                //printf("alertSize: %d\n", alerts.size());
                 //TODO: If pattern exists just update support val
-                lattice_ip->insert(generatePattern(*alert, patternType, alerts.size()));
+                auto newPattern = generatePattern(*alert, patternType, alerts.size());
+                std::unordered_set<beemaster::pattern*>::const_iterator got = lattice_ip->find (newPattern);
+                std::unordered_set<beemaster::pattern*>::hasher fn = lattice_ip->hash_function();
+                //printf("%d\n", fn(newPattern));
+                if(got == lattice_ip->end()) {
+                    lattice_ip->insert(newPattern);
+                } else {
+                    printf("gefunden!");
+                    auto foundPattern = *got;
+                    foundPattern->count = foundPattern->count+1;
+                    foundPattern->support = foundPattern->count / alerts.size();
+                }
             }
-            printf("add to lattice\n");
+            //printf("add to lattice\n");
             lattice[ip] = lattice_ip;
         }
         // filtering process
         // mining significant pattern instances
         for(auto& lattice_ip : lattice){
-            printf("mining\n");
+            //printf("mining\n");
             auto lattice_ip2 = lattice_ip.second;
-            for(auto it : *lattice_ip2){
-                printf("go over all lattice\n");
-                if(it->support < threshold){
+            for(auto it = lattice_ip2->begin(); it != lattice_ip2->end();){
+                auto val = *it;
+                auto supp = val->support;
+                if(supp < threshold){
                     // pattern is insignificant -> delete
                     // What about parents and children?
-                    printf("erase");
-                    lattice_ip2->erase(it);
+                    //printf("erase\n");
+                    it = lattice_ip2->erase(it);
+                } else {
+                    ++it;
                 }
             }
         }
         // filtering redundant pattern instances
         // init non-redundant significant pattern instance set
         for(auto& lattice_ip : lattice){
-            printf("filter pattern\n");
+            //printf("filter pattern\n");
             // compress revised Lattice lattice_ip using threshold
             std::vector<unordered_set<beemaster::pattern*>*>* sets = new std::vector<unordered_set<beemaster::pattern*>*>;
             sets->push_back(patterns);
-            printf("compress\n");
+            //printf("compress\n");
             sets->push_back(this->latticeCompression(lattice_ip.second, threshold));
             patterns = merge_set(*sets);
-            printf("merge\n");
+            //printf("merge\n");
         }
-        printf("return\n");
+        //printf("return\n");
         return patterns;
     }
     
@@ -237,7 +255,7 @@ namespace beemaster{
         std::vector<beemaster::pattern*> nodes;
         this->generateNodesRelation(lattice_ip);
         // print test
-        beemaster::pattern* root;
+        beemaster::pattern* root = new beemaster::pattern;
         for(auto pattern : *lattice_ip){
             //printf("%d has %d children\n", pattern->type, pattern->children.size());
             if(pattern->type == 1){
@@ -245,7 +263,7 @@ namespace beemaster{
                 break;
             }
         }
-        std::postOrder(*root, &nodes);
+        std::postOrder(root, &nodes);
 
         for(auto pattern1 : nodes){
             if(pattern1->isLeaf){

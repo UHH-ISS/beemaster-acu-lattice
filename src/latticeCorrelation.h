@@ -20,6 +20,7 @@ namespace beemaster {
             bool isLeaf;
             std::vector<pattern*> parents;
             std::vector<pattern*> children;
+            std::string key;
             inline bool operator==(const pattern& p1) const;
             pattern(); 
     };
@@ -42,21 +43,23 @@ namespace std{
             // Compute individual hash values for first,
             // second and third and combine them using XOR
             // and bit shifting:
+            printf("hash used!\n");
             return (hash<string>()(k.srcIp)
                     ^ hash<int>()(k.srcPrt)
                     ^ hash<int>()(k.dstPrt)
-                    ^ hash<string>()(k.protocol)) ;
+                    ^ hash<string>()(k.protocol)
+                    ^ hash<int>()(k.type)) ;
         }
     };
     // Merge any unordered_set<pattern> instances
     unordered_set<beemaster::pattern> merge_set(const std::vector<unordered_set<beemaster::pattern>>& p);
-    inline void postOrder(beemaster::pattern& root, vector<beemaster::pattern*>* nodes){   
-        if(!root.children.empty()){
-            for(auto& child : root.children){ 
-                std::postOrder(*child, nodes);
+    inline void postOrder(beemaster::pattern* root, vector<beemaster::pattern*>* nodes){
+        if(!root->children.empty()){
+            for(auto& child : root->children){ 
+                std::postOrder(child, nodes);
             }
-        } if(std::find(nodes->begin(), nodes->end(), &root) == nodes->end()) {
-            nodes->push_back(&root);
+        } if(std::find(nodes->begin(), nodes->end(), root) == nodes->end()) {
+            nodes->push_back(root);
         } 
     }
 
