@@ -40,7 +40,7 @@ int main() {
     // setup algorithms
     auto thresholds = new std::vector<acu::Threshold>;
     thresholds->push_back(acu::Threshold(1, "test", "whatever"));
-    auto lattice = new LatticeCorrelation(public_storage, lattice_storage, thresholds);
+    auto lattice = new LatticeCorrelation(public_storage, lattice_storage, thresholds, "acu/test");
 
     // setup acu
     // TODO set connection details (currently not exposed in fw)

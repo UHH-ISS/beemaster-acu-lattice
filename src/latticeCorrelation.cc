@@ -167,11 +167,14 @@ namespace beemaster{
     }
 
     acu::OutgoingAlert* beemaster::LatticeCorrelation::Invoke(){
-        auto alerts = this->db2->Pop("acu/test");
+        acu::OutgoingAlert* o = nullptr ;
+        auto alerts = this->db2->Pop(this->topic);
         for(auto threshold : *this->thresholds){ 
             auto res = this->correlate(*alerts,threshold.count);
+            auto it = res->begin();
+            auto pat = *it;
+            o = new acu::OutgoingAlert(this->attackMap.at(std::to_string(pat->type)), std::chrono::system_clock::now()); 
         }
-        auto* o = new acu::OutgoingAlert("test", std::chrono::system_clock::now()) ;
         return o;
     }
     unordered_set<beemaster::pattern*>* beemaster::LatticeCorrelation::correlate(vector<const acu::IncomingAlert*> alerts, int threshold){

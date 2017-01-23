@@ -26,7 +26,7 @@ TEST_CASE("Testing LatticeCorrelation", "[lattieCorrelation]") {
     thres.push_back(t);
     beemaster::VectorStorage db2 = beemaster::VectorStorage("/tmp/db2");
     // Create LatticeCorrelation instance
-    auto latCorr = beemaster::LatticeCorrelation(&db2, &db, &thres);
+    auto latCorr = beemaster::LatticeCorrelation(&db2, &db, &thres, "test");
     
     //create set
     std::unordered_set<beemaster::pattern*>* pattern_set = new std::unordered_set<beemaster::pattern*>; 

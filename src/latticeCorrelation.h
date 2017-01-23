@@ -27,14 +27,16 @@ namespace beemaster {
     };
     class LatticeCorrelation : public acu::Correlation {
         public:
+        std::string topic;
         beemaster::VectorStorage* db2;
         std::unordered_map<std::string, std::string> attackMap;
         pattern* generatePattern(acu::IncomingAlert alert, std::string patternSignature, int alertsSize);
     void generateNodesRelation(std::unordered_set<pattern*>* pattern);
 
 
-            LatticeCorrelation(beemaster::VectorStorage* vStorage, beemaster::RocksStorage<int>* storage, std::vector<acu::Threshold>* thresholds) : acu::Correlation(storage, thresholds) {
+            LatticeCorrelation(beemaster::VectorStorage* vStorage, beemaster::RocksStorage<int>* storage, std::vector<acu::Threshold>* thresholds, std::string topic) : acu::Correlation(storage, thresholds) {
         this->db2 = vStorage;
+        this->topic = topic;
         this->attackMap = {{"1","scan"},{"2","Flash crowds response"}, {"3","Trinoo DDoS"}, {"4","worm"}, {"5","reflector DDoS"}, {"6","SYN flood response"}, {"7","W32/Blast worm"}, {"8","SQL-Slammer worm"}};
             };
             std::unordered_set<pattern*>* correlate(std::vector<const acu::IncomingAlert*> alerts, int threshold);
