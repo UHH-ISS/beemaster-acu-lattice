@@ -24,9 +24,9 @@ TEST_CASE("Testing LatticeCorrelation", "[lattieCorrelation]") {
     std::vector<acu::Threshold> thres = {};
     auto t = acu::Threshold(0, "scan", "lol");
     thres.push_back(t);
-    
+    beemaster::VectorStorage db2 = beemaster::VectorStorage("/tmp/db2");
     // Create LatticeCorrelation instance
-    auto latCorr = beemaster::LatticeCorrelation(&db, &thres);
+    auto latCorr = beemaster::LatticeCorrelation(&db2, &db, &thres);
     
     //create set
     std::unordered_set<beemaster::pattern*>* pattern_set = new std::unordered_set<beemaster::pattern*>; 
@@ -264,13 +264,13 @@ TEST_CASE("Testing LatticeCorrelation", "[lattieCorrelation]") {
     }
     SECTION("CORRELATE"){ 
         // correlate
-        std::vector<acu::IncomingAlert*> alerts = {&alert};
+        std::vector<const acu::IncomingAlert*> alerts = {&alert};
         auto pattern2 = latCorr.correlate(alerts, thres[0].count);
     }
     SECTION("MULTIPLE ALERTS"){
         auto msg = broker::message{broker_stamp, "incident", "TCP", "127.0.0.1", (uint16_t)8080, "192.168.0.2", (uint16_t)7070};
         auto alert2 = acu::IncomingAlert(topic, msg);
-        std::vector<acu::IncomingAlert*> alerts = {&alert, &alert2};
+        std::vector<const acu::IncomingAlert*> alerts = {&alert, &alert2};
         auto pattern2 = latCorr.correlate(alerts, thres[0].count);
         printf("size %d\n", pattern2->size());
         for(auto pattern12 : *pattern2) {

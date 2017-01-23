@@ -167,11 +167,14 @@ namespace beemaster{
     }
 
     acu::OutgoingAlert* beemaster::LatticeCorrelation::Invoke(){
-        //this->correlate();
+        auto alerts = this->db2->Pop("acu/test");
+        for(auto threshold : *this->thresholds){ 
+            auto res = this->correlate(*alerts,threshold.count);
+        }
         auto* o = new acu::OutgoingAlert("test", std::chrono::system_clock::now()) ;
         return o;
     }
-    unordered_set<beemaster::pattern*>* beemaster::LatticeCorrelation::correlate(vector<acu::IncomingAlert*> alerts, int threshold){
+    unordered_set<beemaster::pattern*>* beemaster::LatticeCorrelation::correlate(vector<const acu::IncomingAlert*> alerts, int threshold){
         // init set of patterns that will be returned
         auto patterns = new unordered_set<pattern*>;
         // init lattices indexed by ip. Here a request to storage needs to be done
@@ -202,7 +205,7 @@ namespace beemaster{
                 //TODO: If pattern exists just update support val
                 auto newPattern = generatePattern(*alert, patternType, alerts.size());
                 std::unordered_set<beemaster::pattern*>::const_iterator got = lattice_ip->find (newPattern);
-                std::unordered_set<beemaster::pattern*>::hasher fn = lattice_ip->hash_function();
+                //std::unordered_set<beemaster::pattern*>::hasher fn = lattice_ip->hash_function();
                 //printf("%d\n", fn(newPattern));
                 if(got == lattice_ip->end()) {
                     lattice_ip->insert(newPattern);
