@@ -3,7 +3,7 @@
 //
 #include "latticeCorrelation.h"
 #include <acu/correlation.h>
-#include <acu/storage.h>
+//#include <acu/storage.h>
 #include <acu/outgoing_alert.h>
 #include <acu/incoming_alert.h>
 #include "rocks_storage.h"
@@ -173,7 +173,7 @@ namespace beemaster{
             auto res = this->correlate(*alerts,threshold.count);
             auto it = res->begin();
             auto pat = *it;
-            o = new acu::OutgoingAlert(this->attackMap.at(std::to_string(pat->type)), std::chrono::system_clock::now()); 
+            o = new acu::OutgoingAlert(this->attackMap.at(pat->type), std::chrono::system_clock::now()); 
         }
         return o;
     }
@@ -185,6 +185,7 @@ namespace beemaster{
         // TODO: DB call here: can I regex on all keys in rocksdb?
         //
         // All Lattice, use srcIp as Key
+        auto it = this->db->GetIterator();
         unordered_map <std::string, unordered_set<pattern*>*> lattice = {};
 
         unordered_set<pattern*>* lattice_ip;
