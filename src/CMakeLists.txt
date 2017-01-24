@@ -5,6 +5,7 @@ set(SOURCE_FILES
         main.cc
         rocks_storage.cc
         vector_storage.cc
+        config_parser.cc
 		latticeCorrelation.cc)
 
 # Executable definition

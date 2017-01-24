@@ -1,4 +1,4 @@
-/* test_rocks_storage.h
+/* test_rocks_storage.cc
  * ACU Implementation (test)
  *
  * Test functionality of RocksStorage
