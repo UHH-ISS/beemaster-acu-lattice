@@ -38,10 +38,11 @@ namespace std{
 
 namespace beemaster{
     pattern::pattern(){
-        this->srcIp = "";
-        this->srcPrt = 0;
-        this->dstPrt = 0;
-        this->protocol = "";
+        this->attributes = {};
+        //this->srcIp = "";
+        //this->srcPrt = 0;
+        //this->dstPrt = 0;
+        //this->protocol = "";
         this->count = 0;
         this->support = 0;
         this->signature = "";
@@ -83,17 +84,17 @@ namespace beemaster{
         for (auto element : elements){
             //TODO refactor looks shitty
             if(element == "srcIp"){
-                p->srcIp = a.source_ip();
-                p->key += ":" +p->srcIp;
+                p->attributes.insert({element, a.source_ip()});
+                p->key += ":" +p->attributes[element];
             } else if (element == "srcPrt"){
-                p->srcPrt = a.source_port();
-                p->key += ":" + std::to_string(p->srcPrt);
+                p->attributes.insert({element, std::to_string(a.source_port())});
+                p->key += ":" + p->attributes[element];
             } else if (element == "dstPrt"){
-                p->dstPrt = a.destination_port();
-                p->key += ":" + std::to_string(p->dstPrt);
+                p->attributes.insert({element, std::to_string(a.destination_port())});
+                p->key += ":" + p->attributes[element];
             } else if (element == "protocol"){
-                p->protocol = a.protocol();
-                p->key += ":" + p->protocol;
+                p->attributes.insert({element, a.protocol()});
+                p->key += ":" + p->attributes[element];
             }
         }
         p->count = p->count+1;
@@ -108,65 +109,35 @@ namespace beemaster{
     // TODO: refactor, optimize, FUCK MY ASS
         for(auto pattern1 : *p1){
             for(auto pattern2 : *p1){
-                if(pattern1->type == 1){
-                    if(pattern2->type == 2 || pattern2->type == 3 || pattern2->type == 4){
-                        pattern2->parents.push_back(pattern1);
-                        pattern1->children.push_back(pattern2);
+                bool eq = true;
+                //printf("pattern1: %s (%d) | pattern2: %s (%d)\n", pattern1->key.c_str(),pattern1->attributes.size(),  pattern2->key.c_str(), pattern2->attributes.size());
+                for(auto keyIt = pattern1->attributes.begin(); keyIt != pattern1->attributes.end(); ++keyIt){  
+                    if(pattern2->attributes.count(keyIt->first) == 0 || pattern2->attributes.size()-pattern1->attributes.size() != 1){
+                        eq = false;
+                        break;
+                    } 
+                    else if(pattern2->attributes[keyIt->first] != keyIt->second){
+                        //printf("p1[%s]=%s | p2[%s]=%s =>missmatch!\n", keyIt->first.c_str(), keyIt->second.c_str(), keyIt->first.c_str(), pattern2->attributes[keyIt->first].c_str());
+                        eq = false;
+                        break;
+                    }
+                    else if(pattern1->key == pattern2->key){
+                        eq = false;
+                        //printf("the same!\n");
+                        break;
                     }
                 }
-                if(pattern1->type == 2){
-                    if(pattern2->type == 5 || pattern2->type == 6){
-                        if(pattern1->srcIp == pattern2->srcIp && pattern1->srcPrt == pattern2->srcPrt){
-                            pattern2->parents.push_back(pattern1);
-                            pattern1->children.push_back(pattern2);
-                        }
-                    }
-                }
-                if(pattern1->type == 3){
-                    if(pattern2->type == 5 || pattern2->type == 7){
-                        if(pattern1->srcIp == pattern2->srcIp && pattern1->dstPrt == pattern2->dstPrt){
-                            pattern2->parents.push_back(pattern1);
-                            pattern1->children.push_back(pattern2);
-                        }
-                    }
-                }
-                if(pattern1->type == 4){
-                    if(pattern2->type == 6 || pattern2->type == 7){
-                        if(pattern1->srcIp == pattern2->srcIp && pattern1->protocol == pattern2->protocol){
-                            pattern2->parents.push_back(pattern1);
-                            pattern1->children.push_back(pattern2);
-                        }
-                    }
-                }
-                if(pattern1->type == 5){
-                    if(pattern2->type == 8){
-                        if(pattern1->srcIp == pattern2->srcIp && pattern1->srcPrt == pattern2->srcPrt && pattern1->dstPrt == pattern2->dstPrt){
-                                pattern2->parents.push_back(pattern1);
-                                pattern1->children.push_back(pattern2);
-                        }
-                    }
-                }
-                if(pattern1->type == 6){
-                    if(pattern2->type == 8){
-                        if(pattern1->srcIp == pattern2->srcIp && pattern1->srcPrt == pattern2->srcPrt && pattern1->protocol == pattern2->protocol){
-                            pattern2->parents.push_back(pattern1);
-                            pattern1->children.push_back(pattern2);
-                        }
-                    }
-                }
-                if(pattern1->type == 7){
-                    if(pattern2->type == 8){
-                        if(pattern1->srcIp == pattern2->srcIp && pattern1->dstPrt == pattern2->dstPrt && pattern1->protocol == pattern2->protocol){
-                            pattern2->parents.push_back(pattern1);
-                            pattern1->children.push_back(pattern2);
-                        }
-                    }    
-                }
+                //printf("eq:%d\n" ,eq); 
+                if(eq){ 
+                    pattern1->children.push_back(pattern2);
+                    pattern2->parents.push_back(pattern1);
+                }                
             }
         }
     }
 
     acu::OutgoingAlert* beemaster::LatticeCorrelation::Invoke(){
+        // TODO: add a vector of types
         acu::OutgoingAlert* o = nullptr ;
         auto alerts = this->db2->Pop(this->topic);
         for(auto threshold : *this->thresholds){ 
@@ -185,7 +156,14 @@ namespace beemaster{
         // TODO: DB call here: can I regex on all keys in rocksdb?
         //
         // All Lattice, use srcIp as Key
+        //this->db->Set("test", 1337);
+        /*
         auto it = this->db->GetIterator();
+        for(it->SeekToFirst(); it->Valid(); it->Next()){
+            printf("key: %s\n", it->key().data());
+        }
+        delete it;
+        */
         unordered_map <std::string, unordered_set<pattern*>*> lattice = {};
 
         unordered_set<pattern*>* lattice_ip;
@@ -233,7 +211,7 @@ namespace beemaster{
                 auto supp = val->support;
                 if(supp < threshold){
                     // pattern is insignificant -> delete
-                    // What about parents and children?
+                    // TODO:What about parents and children?
                     //printf("erase\n");
                     it = lattice_ip2->erase(it);
                 } else {

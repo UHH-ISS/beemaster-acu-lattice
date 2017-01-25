@@ -31,27 +31,12 @@ TEST_CASE("Testing LatticeCorrelation", "[lattieCorrelation]") {
     //create set
     std::unordered_set<beemaster::pattern*>* pattern_set = new std::unordered_set<beemaster::pattern*>; 
     // generate type1 pattern
-    beemaster::pattern* p1 = latCorr.generatePattern(alert, "srcIp", 1);
-    REQUIRE(p1->srcIp == "127.0.0.1");
-    REQUIRE(p1->srcPrt == 0);
-    REQUIRE(p1->dstPrt == 0);
-    REQUIRE(p1->protocol == "");
-    REQUIRE(p1->type == 1);
-    REQUIRE(!p1->isLeaf);
-    REQUIRE(p1->signature == "srcIp");
-    REQUIRE(p1->support == 1);
-    REQUIRE(p1->count == 1);
-    REQUIRE(p1->parents.empty());
-    REQUIRE(p1->children.empty());
-    REQUIRE(p1->remaining == 0);
-    pattern_set->insert(p1);
-
+    beemaster::pattern* p1;
     //generate type2 pattern
     p1= latCorr.generatePattern(alert, "srcIp:srcPrt", 1);
-    REQUIRE(p1->srcIp == "127.0.0.1");
-    REQUIRE(p1->srcPrt == 8080);
-    REQUIRE(p1->dstPrt == 0);
-    REQUIRE(p1->protocol == "");
+    REQUIRE(p1->attributes.size() == 2);
+    REQUIRE(p1->attributes["srcIp"] == "127.0.0.1");
+    REQUIRE(p1->attributes["srcPrt"] == "8080");
     REQUIRE(p1->type == 2);
     REQUIRE(!p1->isLeaf);
     REQUIRE(p1->signature == "srcIp:srcPrt");
@@ -64,10 +49,9 @@ TEST_CASE("Testing LatticeCorrelation", "[lattieCorrelation]") {
    
     //generate type3 pattern
     p1= latCorr.generatePattern(alert, "srcIp:dstPrt", 1);
-    REQUIRE(p1->srcIp == "127.0.0.1");
-    REQUIRE(p1->srcPrt == 0);
-    REQUIRE(p1->dstPrt == 9090);
-    REQUIRE(p1->protocol == "");
+    REQUIRE(p1->attributes.size() == 2);
+    REQUIRE(p1->attributes["srcIp"] == "127.0.0.1");
+    REQUIRE(p1->attributes["dstPrt"] == "9090");
     REQUIRE(p1->type == 3);
     REQUIRE(!p1->isLeaf);
     REQUIRE(p1->signature == "srcIp:dstPrt");
@@ -80,10 +64,9 @@ TEST_CASE("Testing LatticeCorrelation", "[lattieCorrelation]") {
 
     //generate type4 pattern
     p1= latCorr.generatePattern(alert, "srcIp:protocol", 1);
-    REQUIRE(p1->srcIp == "127.0.0.1");
-    REQUIRE(p1->srcPrt == 0);
-    REQUIRE(p1->dstPrt == 0);
-    REQUIRE(p1->protocol == "TCP");
+    REQUIRE(p1->attributes.size() == 2);
+    REQUIRE(p1->attributes["srcIp"] == "127.0.0.1");
+    REQUIRE(p1->attributes["protocol"] == "TCP");
     REQUIRE(p1->type == 4);
     REQUIRE(!p1->isLeaf);
     REQUIRE(p1->signature == "srcIp:protocol");
@@ -96,10 +79,9 @@ TEST_CASE("Testing LatticeCorrelation", "[lattieCorrelation]") {
 
     //generate type5 pattern
     p1 = latCorr.generatePattern(alert, "srcIp:srcPrt:dstPrt", 1);
-    REQUIRE(p1->srcIp == "127.0.0.1");
-    REQUIRE(p1->srcPrt == 8080);
-    REQUIRE(p1->dstPrt == 9090);
-    REQUIRE(p1->protocol == "");
+    REQUIRE(p1->attributes.size() == 3);
+    REQUIRE(p1->attributes["srcIp"] == "127.0.0.1");
+    REQUIRE(p1->attributes["srcPrt"] == "8080");
     REQUIRE(p1->type == 5);
     REQUIRE(!p1->isLeaf);
     REQUIRE(p1->signature == "srcIp:srcPrt:dstPrt");
@@ -112,10 +94,10 @@ TEST_CASE("Testing LatticeCorrelation", "[lattieCorrelation]") {
 
     //generate type6 pattern
     p1 = latCorr.generatePattern(alert, "srcIp:srcPrt:protocol", 1);
-    REQUIRE(p1->srcIp == "127.0.0.1");
-    REQUIRE(p1->srcPrt == 8080);
-    REQUIRE(p1->dstPrt == 0);
-    REQUIRE(p1->protocol == "TCP");
+    REQUIRE(p1->attributes.size() == 3);
+    REQUIRE(p1->attributes["srcIp"] == "127.0.0.1");
+    REQUIRE(p1->attributes["srcPrt"] == "8080");
+    REQUIRE(p1->attributes["protocol"] == "TCP");
     REQUIRE(p1->type == 6);
     REQUIRE(!p1->isLeaf);
     REQUIRE(p1->signature == "srcIp:srcPrt:protocol");
@@ -128,10 +110,10 @@ TEST_CASE("Testing LatticeCorrelation", "[lattieCorrelation]") {
 
     //generate type7 pattern
     p1 = latCorr.generatePattern(alert, "srcIp:dstPrt:protocol", 1);
-    REQUIRE(p1->srcIp == "127.0.0.1");
-    REQUIRE(p1->srcPrt == 0);
-    REQUIRE(p1->dstPrt == 9090);
-    REQUIRE(p1->protocol == "TCP");
+    REQUIRE(p1->attributes.size() == 3);
+    REQUIRE(p1->attributes["srcIp"] == "127.0.0.1");
+    REQUIRE(p1->attributes["protocol"] == "TCP");
+    REQUIRE(p1->attributes["dstPrt"] == "9090");
     REQUIRE(p1->type == 7);
     REQUIRE(!p1->isLeaf);
     REQUIRE(p1->signature == "srcIp:dstPrt:protocol");
@@ -144,10 +126,11 @@ TEST_CASE("Testing LatticeCorrelation", "[lattieCorrelation]") {
 
     //generate type8 pattern
     p1 = latCorr.generatePattern(alert, "srcIp:srcPrt:dstPrt:protocol", 1);
-    REQUIRE(p1->srcIp == "127.0.0.1");
-    REQUIRE(p1->srcPrt == 8080);
-    REQUIRE(p1->dstPrt == 9090);
-    REQUIRE(p1->protocol == "TCP");
+    REQUIRE(p1->attributes.size() == 4);
+    REQUIRE(p1->attributes["srcIp"] == "127.0.0.1");
+    REQUIRE(p1->attributes["srcPrt"] == "8080");
+    REQUIRE(p1->attributes["dstPrt"] == "9090");
+    REQUIRE(p1->attributes["protocol"] == "TCP");
     REQUIRE(p1->type == 8);
     REQUIRE(p1->isLeaf);
     REQUIRE(p1->signature == "srcIp:srcPrt:dstPrt:protocol");
@@ -157,68 +140,32 @@ TEST_CASE("Testing LatticeCorrelation", "[lattieCorrelation]") {
     REQUIRE(p1->children.empty());
     REQUIRE(p1->remaining == 0);
     pattern_set->insert(p1);
+    
+    p1 = latCorr.generatePattern(alert, "srcIp", 1);
+    REQUIRE(p1->attributes.size() == 1);
+    REQUIRE(p1->attributes["srcIp"] == "127.0.0.1");
+    REQUIRE(p1->type == 1);
+    REQUIRE(!p1->isLeaf);
+    REQUIRE(p1->signature == "srcIp");
+    REQUIRE(p1->support == 1);
+    REQUIRE(p1->count == 1);
+    REQUIRE(p1->parents.empty());
+    REQUIRE(p1->children.empty());
+    REQUIRE(p1->remaining == 0);
+    pattern_set->insert(p1);
+    
     REQUIRE(pattern_set->size() == 8);
     
     SECTION("Relations and postOrder"){
         latCorr.generateNodesRelation(pattern_set);
         for(auto pattern : *pattern_set){
+            //printf("type: %d has %d children\n", pattern->type, pattern->children.size());
             //TODO Check all cases
-            if(pattern->type == 1){        
-                for(auto child: pattern->children){
-                    auto boel = child->type == 2 || child->type == 3 || child->type == 4;
-                    REQUIRE(boel);
-                    REQUIRE(pattern->srcIp == child->srcIp);
-                    REQUIRE(pattern->parents.size() == 0);
-                }
-            }
-            if(pattern->type == 2){
-                for(auto child: pattern->children){
-                    auto boel = child->type == 6 || child->type == 5;
-                    REQUIRE(boel);
-                    REQUIRE(pattern->srcIp == child->srcIp);
-                    REQUIRE(pattern->srcPrt == child->srcPrt);
-                }
-            }
-            if(pattern->type == 3){
-                for(auto child: pattern->children){
-                    auto boel = child->type == 7 || child->type == 5;
-                    REQUIRE(boel);
-                    REQUIRE(pattern->srcIp == child->srcIp);
-                    REQUIRE(pattern->dstPrt == child->dstPrt);
-                }
-            }
-            if(pattern->type == 4){        
-                for(auto child: pattern->children){
-                    auto boel = child->type == 7 || child->type == 6;
-                    REQUIRE(boel);
-                    REQUIRE(pattern->srcIp == child->srcIp);
-                    REQUIRE(pattern->protocol == child->protocol);
-                }
-            }
-            if(pattern->type == 5){
-                for(auto child: pattern->children){
-                    REQUIRE(child->type == 8);
-                    REQUIRE(pattern->srcIp == child->srcIp);
-                    REQUIRE(pattern->srcPrt == child->srcPrt);
-                    REQUIRE(pattern->dstPrt == child->dstPrt);
-                }
-            }
-            if(pattern->type == 6){
-                for(auto child: pattern->children){
-                    REQUIRE(child->type == 8);
-                    REQUIRE(pattern->srcIp == child->srcIp);
-                    REQUIRE(pattern->srcPrt == child->srcPrt);
-                    REQUIRE(pattern->protocol == child->protocol);
-                }
-            }
-            if(pattern->type == 7){
-                for(auto child: pattern->children){
-                    REQUIRE(child->type == 8);
-                    REQUIRE(pattern->srcIp == child->srcIp);
-                    REQUIRE(pattern->protocol == child->protocol);
-                    REQUIRE(pattern->dstPrt == child->dstPrt);
-                }
-            }
+            for(auto it = pattern->attributes.begin(); it!=pattern->attributes.end(); ++it ){
+                for(auto child : pattern->children){
+                    REQUIRE(it->second == child->attributes[it->first]);
+                }    
+            } 
         }
         // postOrder Test
         auto nodes = new std::vector<beemaster::pattern*>;
