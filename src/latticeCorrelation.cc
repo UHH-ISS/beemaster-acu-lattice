@@ -4,7 +4,7 @@
 #include "latticeCorrelation.h"
 #include <acu/correlation.h>
 //#include <acu/storage.h>
-#include <acu/outgoing_alert.h>
+#include "lattice_outgoing_alert.h"
 #include <acu/incoming_alert.h>
 #include "rocks_storage.h"
 #include <acu/threshold.h>
@@ -135,13 +135,14 @@ namespace beemaster{
         // TODO: add a vector of types
         acu::OutgoingAlert* o = nullptr ;
         auto alerts = this->db2->Pop(this->topic);
+        std::vector<std::string> incs = {};
         for(auto threshold : *this->thresholds){ 
             auto res = this->correlate(*alerts,threshold.count);
-            auto it = res->begin();
-            auto pat = *it;
-            this->db->Set(pat->key, pat->count);
-            printf("Set!");
-            o = new acu::OutgoingAlert(this->attackMap.at(pat->type), std::chrono::system_clock::now()); 
+            for(auto pattern : *res){
+                incs.push_back(this->attackMap.at(pattern->type)); 
+                this->db->Set(pattern->key, pattern->count);
+            }
+            o = new beemaster::LatticeOutgoingAlert(incs, std::chrono::system_clock::now()); 
         }
         return o;
     }
