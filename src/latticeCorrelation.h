@@ -12,10 +12,6 @@ namespace beemaster {
             std::unordered_map<std::string, std::string> attributes;
             int count;
             int remaining;
-            //std::string srcIp;
-            //int srcPrt;
-            //int dstPrt;
-            //std::string protocol;
             float support;
             int type;
             std::string signature;
@@ -54,11 +50,6 @@ namespace std{
             // Compute individual hash values for first,
             // second and third and combine them using XOR
             // and bit shifting:
-            /*printf("hash used!\n");
-            std::size_t retHash;
-            for (auto it = k.attributes.begin(); it != k.attributes.end(); ++it){
-                retHash = (retHash ^ hash<string>()(it->second));
-            }*/
             return hash<string>()(k.key);
         }
     };

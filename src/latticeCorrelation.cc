@@ -39,10 +39,6 @@ namespace std{
 namespace beemaster{
     pattern::pattern(){
         this->attributes = {};
-        //this->srcIp = "";
-        //this->srcPrt = 0;
-        //this->dstPrt = 0;
-        //this->protocol = "";
         this->count = 0;
         this->support = 0;
         this->signature = "";
@@ -72,7 +68,7 @@ namespace beemaster{
         results.push_back( string( start, next ) );
         return results;
     }
-    // alle patterns nach paper hardcoded
+    // all pattern types according to paper
     std::vector<string> patternTypes = {"srcIp", "srcIp:srcPrt", "srcIp:dstPrt", "srcIp:protocol", "srcIp:srcPrt:dstPrt", "srcIp:srcPrt:protocol", "srcIp:dstPrt:protocol", "srcIp:srcPrt:dstPrt:protocol"};
     // generate pattern for a certain patternType and alert. Map from alert all members according to patterntype to pattern
     beemaster::pattern* beemaster::LatticeCorrelation::generatePattern(acu::IncomingAlert a, string patternSignature, int alertsSize){
@@ -106,7 +102,6 @@ namespace beemaster{
         return p;
     }
     void beemaster::LatticeCorrelation::generateNodesRelation(unordered_set<beemaster::pattern*>* p1){
-    // TODO: refactor, optimize, FUCK MY ASS
         for(auto pattern1 : *p1){
             for(auto pattern2 : *p1){
                 bool eq = true;
@@ -144,6 +139,8 @@ namespace beemaster{
             auto res = this->correlate(*alerts,threshold.count);
             auto it = res->begin();
             auto pat = *it;
+            this->db->Set(pat->key, pat->count);
+            printf("Set!");
             o = new acu::OutgoingAlert(this->attackMap.at(pat->type), std::chrono::system_clock::now()); 
         }
         return o;
@@ -151,21 +148,41 @@ namespace beemaster{
     unordered_set<beemaster::pattern*>* beemaster::LatticeCorrelation::correlate(vector<const acu::IncomingAlert*> alerts, int threshold){
         // init set of patterns that will be returned
         auto patterns = new unordered_set<pattern*>;
-        // init lattices indexed by ip. Here a request to storage needs to be done
-        // e.g get all entries from db holen, ip is key, pattern is value
-        // TODO: DB call here: can I regex on all keys in rocksdb?
-        //
         // All Lattice, use srcIp as Key
-        //this->db->Set("test", 1337);
-        /*
+        unordered_map <std::string, unordered_set<pattern*>*> lattice = {};
+        
         auto it = this->db->GetIterator();
         for(it->SeekToFirst(); it->Valid(); it->Next()){
             printf("key: %s\n", it->key().data());
+            // generate pattern out of key with patternTypes
+            beemaster::pattern* p = new beemaster::pattern;
+
+            //split key
+            std::string dat = it->key().data();
+            auto data = beemaster::split(dat, ':');
+            auto field = beemaster::split(patternTypes.at(1), ':');
+            p->type = std::stoi(data.at(0));
+            data.erase(data.begin());
+            // iterate over data
+            for(std::size_t i = 0; i<data.size(); ++i){
+                printf("p[%s]= %s", field.at(i).c_str(), data.at(i).c_str());
+                p->attributes.insert({field.at(i), data.at(i)});
+            }
+            //set the count
+            p->count = std::stoi(it->value().data());
+            // check if srcip already has a set
+            if(lattice.count(p->attributes["srcIp"]) == 0){
+                // create lattice_ip set and insert it
+                auto lattice_ip = new unordered_set<pattern*>;
+                lattice_ip->insert(p);
+                lattice.insert({p->attributes["srcIp"], lattice_ip});
+            } else {
+                // get set and insert pattern
+                lattice.at(p->attributes["srcIp"])->insert(p);
+            } 
         }
         delete it;
-        */
-        unordered_map <std::string, unordered_set<pattern*>*> lattice = {};
-
+        
         unordered_set<pattern*>* lattice_ip;
         unordered_set<pattern> patterns_ip;
         for(auto alert : alerts){
@@ -183,20 +200,22 @@ namespace beemaster{
             // generate pattern, for all pattern types
             for(string patternType : patternTypes){
                 //printf("generate pattern\n");
+                printf("lattice_ip.size: %d\n", lattice_ip->size());
                 //printf("alertSize: %d\n", alerts.size());
                 //TODO: If pattern exists just update support val
                 auto newPattern = generatePattern(*alert, patternType, alerts.size());
-                std::unordered_set<beemaster::pattern*>::const_iterator got = lattice_ip->find (newPattern);
-                //std::unordered_set<beemaster::pattern*>::hasher fn = lattice_ip->hash_function();
-                //printf("%d\n", fn(newPattern));
-                if(got == lattice_ip->end()) {
-                    lattice_ip->insert(newPattern);
-                } else {
-                    printf("gefunden!");
-                    auto foundPattern = *got;
-                    foundPattern->count = foundPattern->count+1;
-                    foundPattern->support = foundPattern->count / alerts.size();
+                lattice_ip->insert(newPattern);
+                /*
+                for(auto it = lattice_ip->begin(); it != lattice_ip->end();){
+                    printf("lol");
+                    auto pattern = *it;                   
+                    if (pattern->key == newPattern->key) {
+                        printf("gefunden!");
+                        pattern->count = pattern->count+1;
+                        pattern->support = pattern->count / alerts.size();
+                    }
                 }
+                */
             }
             //printf("add to lattice\n");
             lattice[ip] = lattice_ip;
