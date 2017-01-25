@@ -132,7 +132,6 @@ namespace beemaster{
     }
 
     acu::OutgoingAlert* beemaster::LatticeCorrelation::Invoke(){
-        // TODO: add a vector of types
         acu::OutgoingAlert* o = nullptr ;
         auto alerts = this->db2->Pop(this->topic);
         std::vector<std::string> incs = {};
