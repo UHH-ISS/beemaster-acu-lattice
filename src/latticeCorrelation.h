@@ -50,6 +50,7 @@ namespace std{
             // Compute individual hash values for first,
             // second and third and combine them using XOR
             // and bit shifting:
+            //printf("hash used!\n");
             return hash<string>()(k.key);
         }
     };

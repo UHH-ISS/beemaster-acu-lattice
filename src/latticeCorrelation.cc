@@ -156,7 +156,6 @@ namespace beemaster{
             printf("key: %s\n", it->key().data());
             // generate pattern out of key with patternTypes
             beemaster::pattern* p = new beemaster::pattern;
-
             //split key
             std::string dat = it->key().data();
             auto data = beemaster::split(dat, ':');
@@ -181,8 +180,8 @@ namespace beemaster{
                 lattice.at(p->attributes["srcIp"])->insert(p);
             } 
         }
+        // delete it and free mem
         delete it;
-        
         unordered_set<pattern*>* lattice_ip;
         unordered_set<pattern> patterns_ip;
         for(auto alert : alerts){
@@ -200,30 +199,29 @@ namespace beemaster{
             // generate pattern, for all pattern types
             for(string patternType : patternTypes){
                 //printf("generate pattern\n");
-                printf("lattice_ip.size: %d\n", lattice_ip->size());
                 //printf("alertSize: %d\n", alerts.size());
-                //TODO: If pattern exists just update support val
                 auto newPattern = generatePattern(*alert, patternType, alerts.size());
-                lattice_ip->insert(newPattern);
-                /*
-                for(auto it = lattice_ip->begin(); it != lattice_ip->end();){
-                    printf("lol");
-                    auto pattern = *it;                   
+                //lattice_ip->insert(newPattern);
+                bool ins = true;
+                for(auto it = lattice_ip->begin(); it != lattice_ip->end(); ++it){
+                    auto pattern = *it;
                     if (pattern->key == newPattern->key) {
-                        printf("gefunden!");
                         pattern->count = pattern->count+1;
                         pattern->support = pattern->count / alerts.size();
+                        ins = false;
+                        break;
                     }
                 }
-                */
+                if(ins){
+                    lattice_ip->insert(newPattern);
+                }
             }
-            //printf("add to lattice\n");
             lattice[ip] = lattice_ip;
         }
         // filtering process
         // mining significant pattern instances
         for(auto& lattice_ip : lattice){
-            //printf("mining\n");
+            // printf("mining\n");
             auto lattice_ip2 = lattice_ip.second;
             for(auto it = lattice_ip2->begin(); it != lattice_ip2->end();){
                 auto val = *it;
