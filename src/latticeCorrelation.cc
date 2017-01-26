@@ -106,7 +106,7 @@ namespace beemaster{
             for(auto pattern2 : *p1){
                 bool eq = true;
                 //printf("pattern1: %s (%d) | pattern2: %s (%d)\n", pattern1->key.c_str(),pattern1->attributes.size(),  pattern2->key.c_str(), pattern2->attributes.size());
-                for(auto keyIt = pattern1->attributes.begin(); keyIt != pattern1->attributes.end(); ++keyIt){  
+                for(auto keyIt = pattern1->attributes.begin(); keyIt != pattern1->attributes.end(); ++keyIt){   
                     if(pattern2->attributes.count(keyIt->first) == 0 || pattern2->attributes.size()-pattern1->attributes.size() != 1){
                         eq = false;
                         break;
@@ -132,16 +132,16 @@ namespace beemaster{
     }
 
     acu::OutgoingAlert* beemaster::LatticeCorrelation::Invoke(){
-        acu::OutgoingAlert* o = nullptr ;
+        beemaster::LatticeOutgoingAlert* o = nullptr;
         auto alerts = this->db2->Pop(this->topic);
         std::vector<std::string> incs = {};
         for(auto threshold : *this->thresholds){ 
             auto res = this->correlate(*alerts,threshold.count);
             for(auto pattern : *res){
-                incs.push_back(this->attackMap.at(pattern->type)); 
+                incs.push_back(this->attackMap.at(pattern->type));
                 this->db->Set(pattern->key, pattern->count);
             }
-            o = new beemaster::LatticeOutgoingAlert(incs, std::chrono::system_clock::now()); 
+            o = new beemaster::LatticeOutgoingAlert(incs, std::chrono::system_clock::now());
         }
         return o;
     }
@@ -150,36 +150,44 @@ namespace beemaster{
         auto patterns = new unordered_set<pattern*>;
         // All Lattice, use srcIp as Key
         unordered_map <std::string, unordered_set<pattern*>*> lattice = {};
-        
         auto it = this->db->GetIterator();
         for(it->SeekToFirst(); it->Valid(); it->Next()){
-            printf("key: %s\n", it->key().data());
+            //printf("key: %s\n", it->key().data());
+            //printf("val: %d\n", *(size_t*)it->value().data());
             // generate pattern out of key with patternTypes
             beemaster::pattern* p = new beemaster::pattern;
             //split key
             std::string dat = it->key().data();
+            //printf("before split\n");
             auto data = beemaster::split(dat, ':');
-            auto field = beemaster::split(patternTypes.at(1), ':');
+            //printf("after split\n");
             p->type = std::stoi(data.at(0));
-            data.erase(data.begin());
+            auto field = beemaster::split(patternTypes.at(p->type-1), ':');
+            //data.erase(data.begin());
             // iterate over data
-            for(std::size_t i = 0; i<data.size(); ++i){
-                printf("p[%s]= %s", field.at(i).c_str(), data.at(i).c_str());
-                p->attributes.insert({field.at(i), data.at(i)});
+            //printf("size: %d\n", data.size());
+            for(std::size_t i = 1; i<data.size(); ++i){
+                //printf("%d\n", i);
+                printf("p[%s]= %s\n", field.at(i-1).c_str(), data.at(i).c_str());
+                p->attributes.insert({field.at(i-1), data.at(i)});
             }
             //set the count
-            p->count = std::stoi(it->value().data());
+            p->count = *(size_t*)it->value().data();
             // check if srcip already has a set
+            //printf("check set for ex\n");
             if(lattice.count(p->attributes["srcIp"]) == 0){
                 // create lattice_ip set and insert it
                 auto lattice_ip = new unordered_set<pattern*>;
                 lattice_ip->insert(p);
+                //printf("insert set in lattice!\n");
                 lattice.insert({p->attributes["srcIp"], lattice_ip});
             } else {
                 // get set and insert pattern
+                //printf("insert p in ex set from lattice!\n");
                 lattice.at(p->attributes["srcIp"])->insert(p);
             } 
         }
+        printf("delete it\n");
         // delete it and free mem
         delete it;
         unordered_set<pattern*>* lattice_ip;

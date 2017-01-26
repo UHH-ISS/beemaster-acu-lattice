@@ -5,6 +5,7 @@
 #include "../src/latticeCorrelation.h"
 #include <acu/incoming_alert.h>
 #include "../src/rocks_storage.h"
+#include "../src/lattice_outgoing_alert.h"
 #include <acu/correlation.h>
 #include <unordered_set>
 
@@ -13,7 +14,7 @@ TEST_CASE("Testing LatticeCorrelation", "[lattieCorrelation]") {
     auto time_stamp = std::chrono::system_clock::now();
     auto val = std::chrono::duration_cast<std::chrono::duration<double>>(time_stamp.time_since_epoch());
     auto broker_stamp = broker::time_point{val.count()};
-    auto topic = new std::string("some topic");
+    auto topic = new std::string("test");
     auto msg = broker::message{broker_stamp, "incident", "TCP", "127.0.0.1", (uint16_t)8080, "192.168.0.1", (uint16_t)9090};
     auto alert = acu::IncomingAlert(topic, msg);
 
@@ -206,7 +207,7 @@ TEST_CASE("Testing LatticeCorrelation", "[lattieCorrelation]") {
         auto newSet = latCorr.latticeCompression(pattern_set, thres[0].count);
         for(auto pattern : *newSet){
             //printf("%f >= %d\n", pattern->support, thres[0].count);
-            //REQUIRE(pattern->support >= thres[0].count);
+            REQUIRE(pattern->support >= thres[0].count);
         }
     }
     SECTION("CORRELATE"){ 
@@ -264,6 +265,14 @@ TEST_CASE("Testing LatticeCorrelation", "[lattieCorrelation]") {
             }
             REQUIRE(pattern12->support > thres[0].count);
         }       
+    }
+    
+    SECTION("INVOKE"){
+        // put data in vectorStorage
+        latCorr.db2->Persist(&alert);
+        auto olert = latCorr.Invoke();
+        //REQUIRE(olert->ToMessage());
+        REQUIRE(true);
     }
 }
 

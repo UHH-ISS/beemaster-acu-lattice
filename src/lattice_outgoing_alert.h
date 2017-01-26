@@ -10,8 +10,8 @@ namespace beemaster {
         public:
             //std::chrono::system_clock::time_point timestamp;
             std::vector<std::string> incidents;
-            LatticeOutgoingAlert(std::vector<std::string> incidents, std::chrono::system_clock::time_point timestamp) 
-                : incidents(incidents), acu::OutgoingAlert(incidentName, timestamp) {};
+            LatticeOutgoingAlert(std::vector<std::string> incidents, std::chrono::system_clock::time_point timestamp)
+                : acu::OutgoingAlert("LatticeAlert", timestamp), incidents(incidents) {};
     };
 }
 
