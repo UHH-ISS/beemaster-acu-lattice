@@ -53,10 +53,10 @@ COPY acu/CMakeLists.txt /opt/acu
 COPY acu/Makefile /opt/acu
 COPY acu/test /opt/acu/test
 COPY acu/cmake /opt/acu/cmake
+COPY acu/config-local.ini /opt/acu
 COPY acu/src /opt/acu/src
-COPY acu/config-uhh.ini /opt/acu
 
 WORKDIR /opt/acu
 RUN make
 
-CMD ["build/src/acu-impl", "config-uhh.ini"]
+CMD ["build/src/acu-impl", "config-local.ini"]
