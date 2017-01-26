@@ -139,6 +139,7 @@ namespace beemaster{
             auto res = this->correlate(*alerts,threshold.count);
             for(auto pattern : *res){
                 incs.push_back(this->attackMap.at(pattern->type));
+                printf("Set %s , %d\n", pattern->key.c_str(), pattern->count);
                 this->db->Set(pattern->key, pattern->count);
             }
             o = new beemaster::LatticeOutgoingAlert(incs, std::chrono::system_clock::now());
@@ -152,12 +153,13 @@ namespace beemaster{
         unordered_map <std::string, unordered_set<pattern*>*> lattice = {};
         auto it = this->db->GetIterator();
         for(it->SeekToFirst(); it->Valid(); it->Next()){
-            //printf("key: %s\n", it->key().data());
+            //printf("key: %s\n", it->key().ToString().c_str());
             //printf("val: %d\n", *(size_t*)it->value().data());
             // generate pattern out of key with patternTypes
             beemaster::pattern* p = new beemaster::pattern;
             //split key
-            std::string dat = it->key().data();
+            std::string dat = it->key().ToString();
+            p->key = dat;
             //printf("before split\n");
             auto data = beemaster::split(dat, ':');
             //printf("after split\n");
