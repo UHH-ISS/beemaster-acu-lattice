@@ -6,8 +6,10 @@
 #include <acu/incoming_alert.h>
 #include "../src/rocks_storage.h"
 #include "../src/lattice_outgoing_alert.h"
+#include "../src/lattice_threshold.h"
 #include <acu/correlation.h>
 #include <unordered_set>
+#include <utility>
 
 TEST_CASE("Testing LatticeCorrelation", "[lattieCorrelation]") {
     // Create Incoming Alert
@@ -19,15 +21,15 @@ TEST_CASE("Testing LatticeCorrelation", "[lattieCorrelation]") {
     auto alert = acu::IncomingAlert(topic, msg);
 
     // Open DB
-    beemaster::RocksStorage<int> db = beemaster::RocksStorage<int>("/tmp/test");
+    beemaster::RocksStorage<int> storage = beemaster::RocksStorage<int>("/tmp/test");
 
     // Create Threshold
-    std::vector<acu::Threshold> thres = {};
-    auto t = acu::Threshold(0, "scan", "lol");
+    std::vector<beemaster::LatticeThreshold> thres = {};
+    auto t = beemaster::LatticeThreshold(0.7, "scan", "lol");
     thres.push_back(t);
-    beemaster::VectorStorage db2 = beemaster::VectorStorage("/tmp/db2");
+    beemaster::VectorStorage vStorage = beemaster::VectorStorage("/tmp/db2");
     // Create LatticeCorrelation instance
-    auto latCorr = beemaster::LatticeCorrelation(&db2, &db, &thres, "test");
+    auto latCorr = beemaster::LatticeCorrelation(&vStorage, &storage, &thres, "test");
     
     //create set
     std::unordered_set<beemaster::pattern*>* pattern_set = new std::unordered_set<beemaster::pattern*>; 
@@ -158,6 +160,8 @@ TEST_CASE("Testing LatticeCorrelation", "[lattieCorrelation]") {
     REQUIRE(pattern_set->size() == 8);
     
     SECTION("Relations and postOrder"){
+        //TODO: DIRTY LIKE DAVID :>
+        std::system("rm -rf /tmp/test");
         latCorr.generateNodesRelation(pattern_set);
         for(auto pattern : *pattern_set){
             //printf("type: %d has %d children\n", pattern->type, pattern->children.size());
@@ -204,22 +208,28 @@ TEST_CASE("Testing LatticeCorrelation", "[lattieCorrelation]") {
         }
         */
         //compress
-        auto newSet = latCorr.latticeCompression(pattern_set, thres[0].count);
+        auto newSet = latCorr.latticeCompression(pattern_set, thres[0].countRatio);
         for(auto pattern : *newSet){
             //printf("%f >= %d\n", pattern->support, thres[0].count);
-            REQUIRE(pattern->support >= thres[0].count);
+            REQUIRE(pattern->support >= thres[0].countRatio);
         }
     }
     SECTION("CORRELATE"){ 
         // correlate
+        //TODO: DIRTY LIKE DAVID :>
+        std::system("rm -rf /tmp/test");
+
         std::vector<const acu::IncomingAlert*> alerts = {&alert};
-        auto pattern2 = latCorr.correlate(alerts, thres[0].count);
+        auto pattern2 = latCorr.correlate(alerts, thres[0].countRatio);
     }
     SECTION("MULTIPLE ALERTS"){
+        //TODO: DIRTY LIKE DAVID :>
+        std::system("rm -rf /tmp/test");
+
         auto msg = broker::message{broker_stamp, "incident", "TCP", "127.0.0.1", (uint16_t)8080, "192.168.0.2", (uint16_t)7070};
         auto alert2 = acu::IncomingAlert(topic, msg);
         std::vector<const acu::IncomingAlert*> alerts = {&alert, &alert2};
-        auto pattern2 = latCorr.correlate(alerts, thres[0].count);
+        auto pattern2 = latCorr.correlate(alerts, thres[0].countRatio);
         printf("size %d\n", pattern2->size());
         for(auto pattern12 : *pattern2) {
             printf("%d ->count: %d \n", pattern12->type, pattern12->count);
@@ -263,16 +273,56 @@ TEST_CASE("Testing LatticeCorrelation", "[lattieCorrelation]") {
                 REQUIRE(pattern12->parents.size() == 3);
                 REQUIRE(pattern12->children.size() == 0);
             }
-            REQUIRE(pattern12->support > thres[0].count);
+            REQUIRE(pattern12->support > thres[0].countRatio);
         }       
     }
     
     SECTION("INVOKE"){
+        //TODO: DIRTY LIKE DAVID :>
+        std::system("rm -rf /tmp/test");
+
         // put data in vectorStorage
-        latCorr.db2->Persist(&alert);
+        latCorr.vStorage->Persist(&alert);
         auto olert = latCorr.Invoke();
         //REQUIRE(olert->ToMessage());
         REQUIRE(true);
+    }
+    SECTION("PAPER TEST"){
+        //TODO: DIRTY LIKE DAVID :>
+        std::system("rm -rf /tmp/test");
+
+        auto msg = broker::message{broker_stamp, "incident", "UDP", "60.240.134.94", (uint16_t)4313, "192.168.0.1", (uint16_t)1434};
+        auto alert = acu::IncomingAlert(topic, msg);
+        
+        msg = broker::message{broker_stamp, "incident", "TCP", "60.240.134.94", (uint16_t)4313, "192.168.0.1", (uint16_t)1434};
+        auto alert2 = acu::IncomingAlert(topic, msg);
+        
+        msg = broker::message{broker_stamp, "incident", "UDP", "60.240.134.94", (uint16_t)4313, "192.168.0.1", (uint16_t)3276};
+        auto alert3 = acu::IncomingAlert(topic, msg);
+        
+        msg = broker::message{broker_stamp, "incident", "TCP", "60.240.134.94", (uint16_t)4313, "192.168.0.1", (uint16_t)3276};
+        auto alert4 = acu::IncomingAlert(topic, msg);
+        
+        msg = broker::message{broker_stamp, "incident", "UDP", "60.240.134.94", (uint16_t)2771, "192.168.0.1", (uint16_t)1434};
+        auto alert5 = acu::IncomingAlert(topic, msg);
+
+        msg = broker::message{broker_stamp, "incident", "TCP", "60.240.134.94", (uint16_t)2771, "192.168.0.1", (uint16_t)1434};
+        auto alert6 = acu::IncomingAlert(topic, msg);
+
+        msg = broker::message{broker_stamp, "incident", "UDP", "60.240.134.94", (uint16_t)2771, "192.168.0.1", (uint16_t)3276};
+        auto alert7 = acu::IncomingAlert(topic, msg);
+
+        msg = broker::message{broker_stamp, "incident", "TCP", "60.240.134.94", (uint16_t)2771, "192.168.0.1", (uint16_t)3276};
+        auto alert8 = acu::IncomingAlert(topic, msg);
+        std::vector<int> limit = {85, 5, 5, 5, 65, 5, 35, 5};
+        std::vector<acu::IncomingAlert> input = {alert, alert2, alert3, alert4, alert5, alert6, alert7, alert8};
+        for(size_t j = 0; j<limit.size(); ++j){
+            for(auto i = 0; i<limit.at(j); ++i){
+                latCorr.vStorage->Persist(new acu::IncomingAlert(input.at(j)));
+            }
+        }
+        auto output = latCorr.Invoke();
+        REQUIRE(output->incidents.size() == 1);
     }
 }
 

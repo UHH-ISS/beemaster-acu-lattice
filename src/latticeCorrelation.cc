@@ -7,7 +7,7 @@
 #include "lattice_outgoing_alert.h"
 #include <acu/incoming_alert.h>
 #include "rocks_storage.h"
-#include <acu/threshold.h>
+#include <lattice_threshold.h>
 #include <unordered_set>
 #include <unordered_map>
 #include <string>
@@ -93,7 +93,7 @@ namespace beemaster{
                 p->key += ":" + p->attributes[element];
             }
         }
-        p->count = p->count+1;
+        p->count = 1;
         p->support = p->count / float(alertsSize);
         if(p->type == 8){
             p->isLeaf = true;
@@ -131,27 +131,27 @@ namespace beemaster{
         }
     }
 
-    acu::OutgoingAlert* beemaster::LatticeCorrelation::Invoke(){
+    beemaster::LatticeOutgoingAlert* beemaster::LatticeCorrelation::Invoke(){
         beemaster::LatticeOutgoingAlert* o = nullptr;
-        auto alerts = this->db2->Pop(this->topic);
+        auto alerts = this->vStorage->Pop(this->topic);
         std::vector<std::string> incs = {};
-        for(auto threshold : *this->thresholds){ 
-            auto res = this->correlate(*alerts,threshold.count);
+        for(auto threshold : *this->latticeThresholds){ 
+            auto res = this->correlate(*alerts,threshold.countRatio);
             for(auto pattern : *res){
                 incs.push_back(this->attackMap.at(pattern->type));
-                printf("Set %s , %d\n", pattern->key.c_str(), pattern->count);
-                this->db->Set(pattern->key, pattern->count);
+                printf("Set %s , %d | support: %.1f\n", pattern->key.c_str(), pattern->count, pattern->support);
+                this->storage->Set(pattern->key, pattern->count);
             }
             o = new beemaster::LatticeOutgoingAlert(incs, std::chrono::system_clock::now());
         }
         return o;
     }
-    unordered_set<beemaster::pattern*>* beemaster::LatticeCorrelation::correlate(vector<const acu::IncomingAlert*> alerts, int threshold){
+    unordered_set<beemaster::pattern*>* beemaster::LatticeCorrelation::correlate(vector<const acu::IncomingAlert*> alerts, float threshold){
         // init set of patterns that will be returned
         auto patterns = new unordered_set<pattern*>;
         // All Lattice, use srcIp as Key
         unordered_map <std::string, unordered_set<pattern*>*> lattice = {};
-        auto it = this->db->GetIterator();
+        auto it = this->storage->GetIterator();
         for(it->SeekToFirst(); it->Valid(); it->Next()){
             //printf("key: %s\n", it->key().ToString().c_str());
             //printf("val: %d\n", *(size_t*)it->value().data());
@@ -170,7 +170,7 @@ namespace beemaster{
             //printf("size: %d\n", data.size());
             for(std::size_t i = 1; i<data.size(); ++i){
                 //printf("%d\n", i);
-                printf("p[%s]= %s\n", field.at(i-1).c_str(), data.at(i).c_str());
+                //printf("p[%s]= %s\n", field.at(i-1).c_str(), data.at(i).c_str());
                 p->attributes.insert({field.at(i-1), data.at(i)});
             }
             //set the count
@@ -189,7 +189,7 @@ namespace beemaster{
                 lattice.at(p->attributes["srcIp"])->insert(p);
             } 
         }
-        printf("delete it\n");
+        //printf("delete it\n");
         // delete it and free mem
         delete it;
         unordered_set<pattern*>* lattice_ip;
@@ -217,7 +217,7 @@ namespace beemaster{
                     auto pattern = *it;
                     if (pattern->key == newPattern->key) {
                         pattern->count = pattern->count+1;
-                        pattern->support = pattern->count / alerts.size();
+                        pattern->support = pattern->count / (float) alerts.size();
                         ins = false;
                         break;
                     }
@@ -238,8 +238,6 @@ namespace beemaster{
                 auto supp = val->support;
                 if(supp < threshold){
                     // pattern is insignificant -> delete
-                    // TODO:What about parents and children?
-                    //printf("erase\n");
                     it = lattice_ip2->erase(it);
                 } else {
                     ++it;
@@ -259,10 +257,11 @@ namespace beemaster{
             //printf("merge\n");
         }
         //printf("return\n");
+        printf("patterns.size: %d\n", patterns->size());
         return patterns;
     }
     
-    unordered_set<beemaster::pattern*>* beemaster::LatticeCorrelation::latticeCompression(unordered_set<beemaster::pattern*>* lattice_ip, int threshold){
+    unordered_set<beemaster::pattern*>* beemaster::LatticeCorrelation::latticeCompression(unordered_set<beemaster::pattern*>* lattice_ip, float threshold){
         unordered_set<beemaster::pattern*>* patterns = new unordered_set<beemaster::pattern*>;
         std::vector<beemaster::pattern*> nodes;
         this->generateNodesRelation(lattice_ip);
@@ -276,9 +275,11 @@ namespace beemaster{
             }
         }
         std::postOrder(root, &nodes);
-
+        printf("node size: %d\n", nodes.size());
         for(auto pattern1 : nodes){
-            if(pattern1->isLeaf){
+            printf("%s children: %d\n", pattern1->key.c_str(), pattern1->children.size());
+            printf("%s.count: %d | %.2f\n", pattern1->key.c_str(), pattern1->count, pattern1->support);
+            if(pattern1->children.size() == 0){
                 pattern1->remaining = pattern1->support;
             } else {
                 pattern1->remaining = 0;
@@ -287,6 +288,7 @@ namespace beemaster{
                 }
             }
             if(pattern1->remaining >= threshold) {
+                printf("insert! %s\n", pattern1->key.c_str());
                 patterns->insert(pattern1);
                 pattern1->remaining = 0;
             }

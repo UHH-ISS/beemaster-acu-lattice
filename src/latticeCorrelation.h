@@ -5,13 +5,14 @@
 #include "vector_storage.h"
 #include <unordered_set>
 #include <algorithm>
-#include <acu/outgoing_alert.h>
+#include "lattice_threshold.h"
+#include "lattice_outgoing_alert.h"
 #include <acu/incoming_alert.h>
 namespace beemaster {
         struct pattern {
             std::unordered_map<std::string, std::string> attributes;
             int count;
-            int remaining;
+            float remaining;
             float support;
             int type;
             std::string signature;
@@ -24,23 +25,22 @@ namespace beemaster {
     };
     class LatticeCorrelation : public acu::Correlation {
         public:
-        beemaster::RocksStorage<int>* db;
+        beemaster::VectorStorage* vStorage;
+        beemaster::RocksStorage<int>* storage;
+        std::vector<beemaster::LatticeThreshold>* latticeThresholds;
         std::string topic;
-        beemaster::VectorStorage* db2;
         std::unordered_map<int, std::string> attackMap;
         pattern* generatePattern(acu::IncomingAlert alert, std::string patternSignature, int alertsSize);
     void generateNodesRelation(std::unordered_set<pattern*>* pattern);
 
 
-            LatticeCorrelation(beemaster::VectorStorage* vStorage, beemaster::RocksStorage<int>* storage, std::vector<acu::Threshold>* thresholds, std::string topic) : acu::Correlation(storage, thresholds) {
-        this->db = storage;
-        this->db2 = vStorage;
-        this->topic = topic;
+            LatticeCorrelation(beemaster::VectorStorage* vStorage, beemaster::RocksStorage<int>* storage, std::vector<beemaster::LatticeThreshold>* latticeThresholds, std::string topic) 
+                : acu::Correlation(storage, thresholds), vStorage(vStorage), storage(storage), latticeThresholds(latticeThresholds), topic(topic) {
         this->attackMap = {{1,"scan"},{2,"Flash crowds response"}, {3,"Trinoo DDoS"}, {4,"worm"}, {5,"reflector DDoS"}, {6,"SYN flood response"}, {7,"W32/Blast worm"}, {8,"SQL-Slammer worm"}};
             };
-            std::unordered_set<pattern*>* correlate(std::vector<const acu::IncomingAlert*> alerts, int threshold);
-            std::unordered_set<pattern*>* latticeCompression(std::unordered_set<pattern*>* lattice, int threshold);
-            acu::OutgoingAlert* Invoke();
+            std::unordered_set<pattern*>* correlate(std::vector<const acu::IncomingAlert*> alerts, float threshold);
+            std::unordered_set<pattern*>* latticeCompression(std::unordered_set<pattern*>* lattice, float threshold);
+            beemaster::LatticeOutgoingAlert* Invoke();
     };
 
 }

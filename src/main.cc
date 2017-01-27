@@ -12,6 +12,7 @@
 #include "rocks_storage.h"
 #include "vector_storage.h"
 #include "latticeCorrelation.h"
+#include "lattice_threshold.h"
 #include <iostream>
 #include <csignal>
 
@@ -72,8 +73,8 @@ int main(int argc, char* argv[]) {
     auto alert_mapper = new acu::AlertMapper();
 
     // setup algorithms
-    auto thresholds = new std::vector<acu::Threshold>;
-    thresholds->push_back(acu::Threshold(1, "test", "whatever"));
+    auto thresholds = new std::vector<beemaster::LatticeThreshold>;
+    thresholds->push_back(beemaster::LatticeThreshold(1, "test", "whatever"));
     auto lattice = new LatticeCorrelation(public_storage, lattice_storage, thresholds, "acu/test");
 
     // setup acu
