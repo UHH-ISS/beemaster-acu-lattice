@@ -15,7 +15,6 @@ namespace beemaster {
             float remaining;
             float support;
             int type;
-            std::string signature;
             bool isLeaf;
             std::vector<pattern*> parents;
             std::vector<pattern*> children;

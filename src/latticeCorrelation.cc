@@ -41,10 +41,8 @@ namespace beemaster{
         this->attributes = {};
         this->count = 0;
         this->support = 0;
-        this->signature = "";
         this->remaining = 0;
         this->type = 0;
-        this->isLeaf = false;
         this->parents = {};
         this->children = {};
         this->key = "";
@@ -95,10 +93,6 @@ namespace beemaster{
         }
         p->count = 1;
         p->support = p->count / float(alertsSize);
-        if(p->type == 8){
-            p->isLeaf = true;
-        }
-        p->signature = patternSignature;
         return p;
     }
     void beemaster::LatticeCorrelation::generateNodesRelation(unordered_set<beemaster::pattern*>* p1){
