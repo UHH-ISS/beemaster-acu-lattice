@@ -41,8 +41,6 @@ TEST_CASE("Testing LatticeCorrelation", "[lattieCorrelation]") {
     REQUIRE(p1->attributes["srcIp"] == "127.0.0.1");
     REQUIRE(p1->attributes["srcPrt"] == "8080");
     REQUIRE(p1->type == 2);
-    REQUIRE(!p1->isLeaf);
-    REQUIRE(p1->signature == "srcIp:srcPrt");
     REQUIRE(p1->support == 1);
     REQUIRE(p1->count == 1);
     REQUIRE(p1->parents.empty());
@@ -56,8 +54,6 @@ TEST_CASE("Testing LatticeCorrelation", "[lattieCorrelation]") {
     REQUIRE(p1->attributes["srcIp"] == "127.0.0.1");
     REQUIRE(p1->attributes["dstPrt"] == "9090");
     REQUIRE(p1->type == 3);
-    REQUIRE(!p1->isLeaf);
-    REQUIRE(p1->signature == "srcIp:dstPrt");
     REQUIRE(p1->support == 1);
     REQUIRE(p1->count == 1);
     REQUIRE(p1->parents.empty());
@@ -71,8 +67,6 @@ TEST_CASE("Testing LatticeCorrelation", "[lattieCorrelation]") {
     REQUIRE(p1->attributes["srcIp"] == "127.0.0.1");
     REQUIRE(p1->attributes["protocol"] == "TCP");
     REQUIRE(p1->type == 4);
-    REQUIRE(!p1->isLeaf);
-    REQUIRE(p1->signature == "srcIp:protocol");
     REQUIRE(p1->support == 1);
     REQUIRE(p1->count == 1);
     REQUIRE(p1->parents.empty());
@@ -86,8 +80,6 @@ TEST_CASE("Testing LatticeCorrelation", "[lattieCorrelation]") {
     REQUIRE(p1->attributes["srcIp"] == "127.0.0.1");
     REQUIRE(p1->attributes["srcPrt"] == "8080");
     REQUIRE(p1->type == 5);
-    REQUIRE(!p1->isLeaf);
-    REQUIRE(p1->signature == "srcIp:srcPrt:dstPrt");
     REQUIRE(p1->support == 1);
     REQUIRE(p1->count == 1);
     REQUIRE(p1->parents.empty());
@@ -102,8 +94,6 @@ TEST_CASE("Testing LatticeCorrelation", "[lattieCorrelation]") {
     REQUIRE(p1->attributes["srcPrt"] == "8080");
     REQUIRE(p1->attributes["protocol"] == "TCP");
     REQUIRE(p1->type == 6);
-    REQUIRE(!p1->isLeaf);
-    REQUIRE(p1->signature == "srcIp:srcPrt:protocol");
     REQUIRE(p1->support == 1);
     REQUIRE(p1->count == 1);
     REQUIRE(p1->parents.empty());
@@ -118,8 +108,6 @@ TEST_CASE("Testing LatticeCorrelation", "[lattieCorrelation]") {
     REQUIRE(p1->attributes["protocol"] == "TCP");
     REQUIRE(p1->attributes["dstPrt"] == "9090");
     REQUIRE(p1->type == 7);
-    REQUIRE(!p1->isLeaf);
-    REQUIRE(p1->signature == "srcIp:dstPrt:protocol");
     REQUIRE(p1->support == 1);
     REQUIRE(p1->count == 1);
     REQUIRE(p1->parents.empty());
@@ -135,8 +123,6 @@ TEST_CASE("Testing LatticeCorrelation", "[lattieCorrelation]") {
     REQUIRE(p1->attributes["dstPrt"] == "9090");
     REQUIRE(p1->attributes["protocol"] == "TCP");
     REQUIRE(p1->type == 8);
-    REQUIRE(p1->isLeaf);
-    REQUIRE(p1->signature == "srcIp:srcPrt:dstPrt:protocol");
     REQUIRE(p1->support == 1);
     REQUIRE(p1->count == 1);
     REQUIRE(p1->parents.empty());
@@ -148,8 +134,6 @@ TEST_CASE("Testing LatticeCorrelation", "[lattieCorrelation]") {
     REQUIRE(p1->attributes.size() == 1);
     REQUIRE(p1->attributes["srcIp"] == "127.0.0.1");
     REQUIRE(p1->type == 1);
-    REQUIRE(!p1->isLeaf);
-    REQUIRE(p1->signature == "srcIp");
     REQUIRE(p1->support == 1);
     REQUIRE(p1->count == 1);
     REQUIRE(p1->parents.empty());
