@@ -3,8 +3,8 @@
 #include <acu/correlation.h>
 #include "rocks_storage.h"
 #include "vector_storage.h"
-#include <unordered_set>
 #include <algorithm>
+#include <unordered_map>
 #include "lattice_threshold.h"
 #include "lattice_outgoing_alert.h"
 #include <acu/incoming_alert.h>
@@ -29,15 +29,15 @@ namespace beemaster {
         std::string topic;
         std::unordered_map<int, std::string> attackMap;
         pattern* generatePattern(acu::IncomingAlert alert, std::string patternSignature, int alertsSize);
-    void generateNodesRelation(std::unordered_set<pattern*>* pattern);
+    void generateNodesRelation(std::unordered_map<std::string, pattern*>* pattern);
 
 
             LatticeCorrelation(beemaster::VectorStorage* vStorage, beemaster::RocksStorage<int>* storage, std::vector<beemaster::LatticeThreshold>* latticeThresholds, std::string topic) 
                 : acu::Correlation(storage, thresholds), vStorage(vStorage), storage(storage), latticeThresholds(latticeThresholds), topic(topic) {
         this->attackMap = {{1,"scan"},{2,"Flash crowds response"}, {3,"Trinoo DDoS"}, {4,"worm"}, {5,"reflector DDoS"}, {6,"SYN flood response"}, {7,"W32/Blast worm"}, {8,"SQL-Slammer worm"}};
             };
-            std::unordered_set<pattern*>* correlate(std::vector<const acu::IncomingAlert*> alerts, float threshold);
-            std::unordered_set<pattern*>* latticeCompression(std::unordered_set<pattern*>* lattice, float threshold);
+            std::unordered_map<std::string, pattern*>* correlate(std::vector<const acu::IncomingAlert*> alerts, float threshold);
+            std::unordered_map<std::string, pattern*>* latticeCompression(std::unordered_map<std::string, pattern*>* lattice, float threshold);
             beemaster::LatticeOutgoingAlert* Invoke();
     };
 
@@ -53,7 +53,6 @@ namespace std{
         }
     };
     // Merge any unordered_set<pattern> instances
-    unordered_set<beemaster::pattern> merge_set(const std::vector<unordered_set<beemaster::pattern>>& p);
     inline void postOrder(beemaster::pattern* root, vector<beemaster::pattern*>* nodes){
         if(!root->children.empty()){
             for(auto& child : root->children){ 
@@ -63,7 +62,6 @@ namespace std{
             nodes->push_back(root);
         } 
     }
-
 }   
 
 #endif // ACU_IMPL_LATTICECORRELATION_H

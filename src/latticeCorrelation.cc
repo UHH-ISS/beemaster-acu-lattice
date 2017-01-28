@@ -5,29 +5,13 @@
 #include "lattice_outgoing_alert.h"
 #include <acu/incoming_alert.h>
 #include "lattice_threshold.h"
-#include <unordered_set>
 #include <unordered_map>
 #include <string>
 #include <iostream>
 #include <vector>
 #include <iterator>
-//#include <algorithm>
 #include <chrono>
 using namespace std;
-// hash func for unordered_set
-namespace std{
-    // Merge any unordered_set<pattern> instances
-    unordered_set<beemaster::pattern*>* merge_set(std::vector<unordered_set<beemaster::pattern*>*> p){
-        auto setUnion = new unordered_set<beemaster::pattern*>;
-        for(auto p_set : p){
-            for(auto& p1 : *p_set) {
-                setUnion->insert(p1);
-            }
-        }
-        return setUnion;
-    }
-}
-
 namespace beemaster{
     pattern::pattern(){
         this->attributes = {};
@@ -86,10 +70,12 @@ namespace beemaster{
         p->support = p->count / float(alertsSize);
         return p;
     }
-    void beemaster::LatticeCorrelation::generateNodesRelation(unordered_set<beemaster::pattern*>* p1){
-        for(auto pattern1 : *p1){
-            for(auto pattern2 : *p1){
+    void beemaster::LatticeCorrelation::generateNodesRelation(unordered_map<std::string, beemaster::pattern*>* p1){
+        for(auto el1 : *p1){
+            for(auto el2 : *p1){
                 bool eq = true;
+                auto pattern1 = el1.second;
+                auto pattern2 = el2.second;
                 for(auto keyIt = pattern1->attributes.begin(); keyIt != pattern1->attributes.end(); ++keyIt){   
                     if(pattern2->attributes.count(keyIt->first) == 0 || pattern2->attributes.size()-pattern1->attributes.size() != 1){
                         eq = false;
@@ -119,49 +105,41 @@ namespace beemaster{
         for(auto threshold : *this->latticeThresholds){ 
             auto res = this->correlate(*alerts,threshold.countRatio);
             for(auto pattern : *res){
-                incs.push_back(this->attackMap.at(pattern->type));
+                incs.push_back(this->attackMap.at(pattern.second->type));
             }
             o = new beemaster::LatticeOutgoingAlert(incs, std::chrono::system_clock::now());
         }
         return o;
     }
-    unordered_set<beemaster::pattern*>* beemaster::LatticeCorrelation::correlate(vector<const acu::IncomingAlert*> alerts, float threshold){
+    unordered_map<std::string, beemaster::pattern*>* beemaster::LatticeCorrelation::correlate(vector<const acu::IncomingAlert*> alerts, float threshold){
         // init set of patterns that will be returned
-        auto patterns = new unordered_set<pattern*>;
+        auto patterns = new unordered_map<std::string, pattern*>;
         // All Lattice, use srcIp as Key
-        unordered_map <std::string, unordered_set<pattern*>*> lattice = {};
-        unordered_set<pattern*>* lattice_ip;
-        unordered_set<pattern> patterns_ip;
+        unordered_map <std::string, unordered_map<std::string, pattern*>*> lattice = {};
+        //unordered_set<pattern*>* lattice_ip;
+        unordered_map<std::string, pattern*>* lattice_ip;
         for(auto alert : alerts){
             string ip = alert->source_ip();
             int it = lattice.count(ip);
             if(it == 0){
                 // create lattice with ip
-                lattice_ip = new unordered_set<pattern*>;
+                //lattice_ip = new unordered_set<pattern*>;
+                lattice_ip = new unordered_map<std::string, pattern*>;
             } else {
                 // get element from lattice
-                lattice_ip = lattice.find(ip)->second;
+                //lattice_ip = lattice.find(ip)->second;
+                lattice_ip = lattice.at(ip);
             }
             // generate pattern, for all pattern types
             for(string patternType : patternTypes){
                 auto newPattern = generatePattern(*alert, patternType, alerts.size());
-                bool ins = true;
                 // check if the pattern already exists and update it if it does.
-                // TODO: if map O(n) lookup.
-                //unordered_map<std::string, beemaster::pattern*> test = {};
-                //test.insert({newPattern->key, newPattern});
-                for(auto it = lattice_ip->begin(); it != lattice_ip->end(); ++it){
-                    auto pattern = *it;
-                    if (pattern->key == newPattern->key) {
-                        pattern->count = pattern->count+1;
-                        pattern->support = pattern->count / (float) alerts.size();
-                        ins = false;
-                        break;
-                    }
+                auto update = lattice_ip->insert({newPattern->key, newPattern});
+                if (!update.second) {
+                    update.first->second->count = update.first->second->count+1;
+                    update.first->second->support = update.first->second->count / (float) alerts.size();
                 }
-                if(ins){
-                    lattice_ip->insert(newPattern);
-                }
+                
             }
             lattice[ip] = lattice_ip;
         }
@@ -170,7 +148,7 @@ namespace beemaster{
         for(auto& lattice_ip : lattice){
             auto lattice_ip2 = lattice_ip.second;
             for(auto it = lattice_ip2->begin(); it != lattice_ip2->end();){
-                auto val = *it;
+                auto val = it->second;
                 auto supp = val->support;
                 if(supp < threshold){
                     // pattern is insignificant -> delete
@@ -184,23 +162,21 @@ namespace beemaster{
         // init non-redundant significant pattern instance set
         for(auto& lattice_ip : lattice){
             // compress revised Lattice lattice_ip using threshold
-            std::vector<unordered_set<beemaster::pattern*>*>* sets = new std::vector<unordered_set<beemaster::pattern*>*>;
-            sets->push_back(this->latticeCompression(lattice_ip.second, threshold));
-            // TODO: patterns.insert(sets->begin(), sets->end());
-            patterns = merge_set(*sets);
+            auto comp = this->latticeCompression(lattice_ip.second, threshold);
+            patterns->insert(comp->begin(), comp->end());
         }
         return patterns;
     }
     
-    unordered_set<beemaster::pattern*>* beemaster::LatticeCorrelation::latticeCompression(unordered_set<beemaster::pattern*>* lattice_ip, float threshold){
-        unordered_set<beemaster::pattern*>* patterns = new unordered_set<beemaster::pattern*>;
+    unordered_map<std::string, beemaster::pattern*>* beemaster::LatticeCorrelation::latticeCompression(unordered_map<std::string, beemaster::pattern*>* lattice_ip, float threshold){
+        unordered_map<std::string, beemaster::pattern*>* patterns = new unordered_map<std::string, beemaster::pattern*>;
         std::vector<beemaster::pattern*> nodes;
         this->generateNodesRelation(lattice_ip);
         // print test
         beemaster::pattern* root = new beemaster::pattern;
         for(auto pattern : *lattice_ip){
-            if(pattern->type == 1){
-                root = pattern;
+            if(pattern.second->type == 1){
+                root = pattern.second;
                 break;
             }
         }
@@ -215,7 +191,7 @@ namespace beemaster{
                 }
             }
             if(pattern1->remaining >= threshold) {
-                patterns->insert(pattern1);
+                patterns->insert({pattern1->key, pattern1});
                 pattern1->remaining = 0;
             }
         }

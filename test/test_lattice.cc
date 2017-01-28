@@ -8,7 +8,7 @@
 #include "../src/lattice_outgoing_alert.h"
 #include "../src/lattice_threshold.h"
 #include <acu/correlation.h>
-#include <unordered_set>
+#include <unordered_map>
 #include <utility>
 
 TEST_CASE("Testing LatticeCorrelation", "[lattieCorrelation]") {
@@ -32,7 +32,7 @@ TEST_CASE("Testing LatticeCorrelation", "[lattieCorrelation]") {
     auto latCorr = beemaster::LatticeCorrelation(&vStorage, &storage, &thres, "test");
     
     //create set
-    std::unordered_set<beemaster::pattern*>* pattern_set = new std::unordered_set<beemaster::pattern*>; 
+    std::unordered_map<std::string, beemaster::pattern*>* pattern_set = new std::unordered_map<std::string, beemaster::pattern*>; 
     // generate type1 pattern
     beemaster::pattern* p1;
     //generate type2 pattern
@@ -46,7 +46,7 @@ TEST_CASE("Testing LatticeCorrelation", "[lattieCorrelation]") {
     REQUIRE(p1->parents.empty());
     REQUIRE(p1->children.empty());
     REQUIRE(p1->remaining == 0);
-    pattern_set->insert(p1);
+    pattern_set->insert({p1->key, p1});
    
     //generate type3 pattern
     p1= latCorr.generatePattern(alert, "srcIp:dstPrt", 1);
@@ -59,7 +59,7 @@ TEST_CASE("Testing LatticeCorrelation", "[lattieCorrelation]") {
     REQUIRE(p1->parents.empty());
     REQUIRE(p1->children.empty());
     REQUIRE(p1->remaining == 0);
-    pattern_set->insert(p1);
+    pattern_set->insert({p1->key, p1});
 
     //generate type4 pattern
     p1= latCorr.generatePattern(alert, "srcIp:protocol", 1);
@@ -72,7 +72,7 @@ TEST_CASE("Testing LatticeCorrelation", "[lattieCorrelation]") {
     REQUIRE(p1->parents.empty());
     REQUIRE(p1->children.empty());
     REQUIRE(p1->remaining == 0);
-    pattern_set->insert(p1);
+    pattern_set->insert({p1->key, p1});
 
     //generate type5 pattern
     p1 = latCorr.generatePattern(alert, "srcIp:srcPrt:dstPrt", 1);
@@ -85,7 +85,7 @@ TEST_CASE("Testing LatticeCorrelation", "[lattieCorrelation]") {
     REQUIRE(p1->parents.empty());
     REQUIRE(p1->children.empty());
     REQUIRE(p1->remaining == 0);
-    pattern_set->insert(p1);
+    pattern_set->insert({p1->key, p1});
 
     //generate type6 pattern
     p1 = latCorr.generatePattern(alert, "srcIp:srcPrt:protocol", 1);
@@ -99,7 +99,7 @@ TEST_CASE("Testing LatticeCorrelation", "[lattieCorrelation]") {
     REQUIRE(p1->parents.empty());
     REQUIRE(p1->children.empty());
     REQUIRE(p1->remaining == 0);
-    pattern_set->insert(p1);
+    pattern_set->insert({p1->key, p1});
 
     //generate type7 pattern
     p1 = latCorr.generatePattern(alert, "srcIp:dstPrt:protocol", 1);
@@ -113,7 +113,7 @@ TEST_CASE("Testing LatticeCorrelation", "[lattieCorrelation]") {
     REQUIRE(p1->parents.empty());
     REQUIRE(p1->children.empty());
     REQUIRE(p1->remaining == 0);
-    pattern_set->insert(p1);
+    pattern_set->insert({p1->key, p1});
 
     //generate type8 pattern
     p1 = latCorr.generatePattern(alert, "srcIp:srcPrt:dstPrt:protocol", 1);
@@ -128,7 +128,7 @@ TEST_CASE("Testing LatticeCorrelation", "[lattieCorrelation]") {
     REQUIRE(p1->parents.empty());
     REQUIRE(p1->children.empty());
     REQUIRE(p1->remaining == 0);
-    pattern_set->insert(p1);
+    pattern_set->insert({p1->key, p1});
     
     p1 = latCorr.generatePattern(alert, "srcIp", 1);
     REQUIRE(p1->attributes.size() == 1);
@@ -139,7 +139,7 @@ TEST_CASE("Testing LatticeCorrelation", "[lattieCorrelation]") {
     REQUIRE(p1->parents.empty());
     REQUIRE(p1->children.empty());
     REQUIRE(p1->remaining == 0);
-    pattern_set->insert(p1);
+    pattern_set->insert({p1->key, p1});
     
     REQUIRE(pattern_set->size() == 8);
     
@@ -150,8 +150,8 @@ TEST_CASE("Testing LatticeCorrelation", "[lattieCorrelation]") {
         for(auto pattern : *pattern_set){
             //printf("type: %d has %d children\n", pattern->type, pattern->children.size());
             //TODO Check all cases
-            for(auto it = pattern->attributes.begin(); it!=pattern->attributes.end(); ++it ){
-                for(auto child : pattern->children){
+            for(auto it = pattern.second->attributes.begin(); it!=pattern.second->attributes.end(); ++it ){
+                for(auto child : pattern.second->children){
                     REQUIRE(it->second == child->attributes[it->first]);
                 }    
             } 
@@ -161,8 +161,8 @@ TEST_CASE("Testing LatticeCorrelation", "[lattieCorrelation]") {
         beemaster::pattern* root = new beemaster::pattern;
         // get root
         for(auto pattern : *pattern_set){
-            if(pattern->type == 1){
-                root = pattern;
+            if(pattern.second->type == 1){
+                root = pattern.second;
                 break;
             }
         }
@@ -195,7 +195,7 @@ TEST_CASE("Testing LatticeCorrelation", "[lattieCorrelation]") {
         auto newSet = latCorr.latticeCompression(pattern_set, thres[0].countRatio);
         for(auto pattern : *newSet){
             //printf("%f >= %d\n", pattern->support, thres[0].count);
-            REQUIRE(pattern->support >= thres[0].countRatio);
+            REQUIRE(pattern.second->support >= thres[0].countRatio);
         }
     }
     SECTION("CORRELATE"){ 
@@ -214,7 +214,8 @@ TEST_CASE("Testing LatticeCorrelation", "[lattieCorrelation]") {
         auto alert2 = acu::IncomingAlert(topic, msg);
         std::vector<const acu::IncomingAlert*> alerts = {&alert, &alert2};
         auto pattern2 = latCorr.correlate(alerts, 0);
-        for(auto pattern12 : *pattern2) {
+        for(auto pattern21 : *pattern2) {
+            auto pattern12 = pattern21.second;
             if(pattern12->type == 1){
                 REQUIRE(pattern12->support == 1);
                 REQUIRE(pattern12->parents.size() == 0);
