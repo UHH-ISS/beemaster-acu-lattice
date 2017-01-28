@@ -2,20 +2,16 @@
 // Created by florian on 12/1/16.
 //
 #include "latticeCorrelation.h"
-#include <acu/correlation.h>
-//#include <acu/storage.h>
 #include "lattice_outgoing_alert.h"
 #include <acu/incoming_alert.h>
-#include "rocks_storage.h"
 #include "lattice_threshold.h"
 #include <unordered_set>
 #include <unordered_map>
 #include <string>
 #include <iostream>
-#include <array>
 #include <vector>
 #include <iterator>
-#include <algorithm>
+//#include <algorithm>
 #include <chrono>
 using namespace std;
 // hash func for unordered_set
@@ -124,7 +120,6 @@ namespace beemaster{
             auto res = this->correlate(*alerts,threshold.countRatio);
             for(auto pattern : *res){
                 incs.push_back(this->attackMap.at(pattern->type));
-                this->storage->Set(pattern->key, pattern->count);
             }
             o = new beemaster::LatticeOutgoingAlert(incs, std::chrono::system_clock::now());
         }
@@ -135,37 +130,6 @@ namespace beemaster{
         auto patterns = new unordered_set<pattern*>;
         // All Lattice, use srcIp as Key
         unordered_map <std::string, unordered_set<pattern*>*> lattice = {};
-        auto it = this->storage->GetIterator();
-        //load data from db and make it to pattern
-        //TODO: this seems obsolet...
-        for(it->SeekToFirst(); it->Valid(); it->Next()){
-            // generate pattern out of key with patternTypes
-            beemaster::pattern* p = new beemaster::pattern;
-            //split key
-            std::string dat = it->key().ToString();
-            p->key = dat;
-            auto data = beemaster::split(dat, ':');
-            p->type = std::stoi(data.at(0));
-            auto field = beemaster::split(patternTypes.at(p->type-1), ':');
-            // iterate over data
-            for(std::size_t i = 1; i<data.size(); ++i){
-                p->attributes.insert({field.at(i-1), data.at(i)});
-            }
-            //set the count
-            p->count = *(size_t*)it->value().data();
-            // check if srcip already has a set
-            if(lattice.count(p->attributes["srcIp"]) == 0){
-                // create lattice_ip set and insert it
-                auto lattice_ip = new unordered_set<pattern*>;
-                lattice_ip->insert(p);
-                lattice.insert({p->attributes["srcIp"], lattice_ip});
-            } else {
-                // get set and insert pattern
-                lattice.at(p->attributes["srcIp"])->insert(p);
-            } 
-        }
-        // delete it and free mem
-        delete it;
         unordered_set<pattern*>* lattice_ip;
         unordered_set<pattern> patterns_ip;
         for(auto alert : alerts){
