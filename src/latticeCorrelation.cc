@@ -7,7 +7,7 @@
 #include "lattice_outgoing_alert.h"
 #include <acu/incoming_alert.h>
 #include "rocks_storage.h"
-#include <lattice_threshold.h>
+#include "lattice_threshold.h"
 #include <unordered_set>
 #include <unordered_map>
 #include <string>
@@ -139,7 +139,7 @@ namespace beemaster{
             auto res = this->correlate(*alerts,threshold.countRatio);
             for(auto pattern : *res){
                 incs.push_back(this->attackMap.at(pattern->type));
-                printf("Set %s , %d | support: %.1f\n", pattern->key.c_str(), pattern->count, pattern->support);
+                //printf("Set %s , %d | support: %.1f\n", pattern->key.c_str(), pattern->count, pattern->support);
                 this->storage->Set(pattern->key, pattern->count);
             }
             o = new beemaster::LatticeOutgoingAlert(incs, std::chrono::system_clock::now());
@@ -257,7 +257,7 @@ namespace beemaster{
             //printf("merge\n");
         }
         //printf("return\n");
-        printf("patterns.size: %d\n", patterns->size());
+        //printf("patterns.size: %d\n", patterns->size());
         return patterns;
     }
     
@@ -275,10 +275,10 @@ namespace beemaster{
             }
         }
         std::postOrder(root, &nodes);
-        printf("node size: %d\n", nodes.size());
+        //printf("node size: %d\n", nodes.size());
         for(auto pattern1 : nodes){
-            printf("%s children: %d\n", pattern1->key.c_str(), pattern1->children.size());
-            printf("%s.count: %d | %.2f\n", pattern1->key.c_str(), pattern1->count, pattern1->support);
+            //printf("%s children: %d\n", pattern1->key.c_str(), pattern1->children.size());
+            //printf("%s.count: %d | %.2f\n", pattern1->key.c_str(), pattern1->count, pattern1->support);
             if(pattern1->children.size() == 0){
                 pattern1->remaining = pattern1->support;
             } else {
@@ -288,7 +288,7 @@ namespace beemaster{
                 }
             }
             if(pattern1->remaining >= threshold) {
-                printf("insert! %s\n", pattern1->key.c_str());
+                //printf("insert! %s\n", pattern1->key.c_str());
                 patterns->insert(pattern1);
                 pattern1->remaining = 0;
             }

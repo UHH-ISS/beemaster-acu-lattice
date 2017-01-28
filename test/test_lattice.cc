@@ -229,10 +229,8 @@ TEST_CASE("Testing LatticeCorrelation", "[lattieCorrelation]") {
         auto msg = broker::message{broker_stamp, "incident", "TCP", "127.0.0.1", (uint16_t)8080, "192.168.0.2", (uint16_t)7070};
         auto alert2 = acu::IncomingAlert(topic, msg);
         std::vector<const acu::IncomingAlert*> alerts = {&alert, &alert2};
-        auto pattern2 = latCorr.correlate(alerts, thres[0].countRatio);
-        printf("size %d\n", pattern2->size());
+        auto pattern2 = latCorr.correlate(alerts, 0);
         for(auto pattern12 : *pattern2) {
-            printf("%d ->count: %d \n", pattern12->type, pattern12->count);
             if(pattern12->type == 1){
                 REQUIRE(pattern12->support == 1);
                 REQUIRE(pattern12->parents.size() == 0);
@@ -273,7 +271,7 @@ TEST_CASE("Testing LatticeCorrelation", "[lattieCorrelation]") {
                 REQUIRE(pattern12->parents.size() == 3);
                 REQUIRE(pattern12->children.size() == 0);
             }
-            REQUIRE(pattern12->support > thres[0].countRatio);
+            REQUIRE(pattern12->support > 0);
         }       
     }
     
@@ -323,6 +321,7 @@ TEST_CASE("Testing LatticeCorrelation", "[lattieCorrelation]") {
         }
         auto output = latCorr.Invoke();
         REQUIRE(output->incidents.size() == 1);
+        REQUIRE(output->incidents[0] == "W32/Blast worm");
     }
 }
 
