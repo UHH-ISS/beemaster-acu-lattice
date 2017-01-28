@@ -116,18 +116,15 @@ namespace beemaster{
         auto patterns = new unordered_map<std::string, pattern*>;
         // All Lattice, use srcIp as Key
         unordered_map <std::string, unordered_map<std::string, pattern*>*> lattice = {};
-        //unordered_set<pattern*>* lattice_ip;
         unordered_map<std::string, pattern*>* lattice_ip;
         for(auto alert : alerts){
             string ip = alert->source_ip();
             int it = lattice.count(ip);
             if(it == 0){
                 // create lattice with ip
-                //lattice_ip = new unordered_set<pattern*>;
                 lattice_ip = new unordered_map<std::string, pattern*>;
             } else {
                 // get element from lattice
-                //lattice_ip = lattice.find(ip)->second;
                 lattice_ip = lattice.at(ip);
             }
             // generate pattern, for all pattern types
@@ -172,7 +169,6 @@ namespace beemaster{
         unordered_map<std::string, beemaster::pattern*>* patterns = new unordered_map<std::string, beemaster::pattern*>;
         std::vector<beemaster::pattern*> nodes;
         this->generateNodesRelation(lattice_ip);
-        // print test
         beemaster::pattern* root = new beemaster::pattern;
         for(auto pattern : *lattice_ip){
             if(pattern.second->type == 1){
