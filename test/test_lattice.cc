@@ -3,11 +3,12 @@
  */
 #include "catch.hpp"
 #include "../src/latticeCorrelation.h"
-#include <acu/incoming_alert.h>
+//#include <acu/incoming_alert.h>
+#include "../src/lattice_incoming_alert.h"
 #include "../src/rocks_storage.h"
 #include "../src/lattice_outgoing_alert.h"
 #include "../src/lattice_threshold.h"
-#include <acu/correlation.h>
+//#include <acu/correlation.h>
 #include <unordered_map>
 #include <utility>
 
@@ -18,7 +19,7 @@ TEST_CASE("Testing LatticeCorrelation", "[lattieCorrelation]") {
     auto broker_stamp = broker::time_point{val.count()};
     auto topic = new std::string("test");
     auto msg = broker::message{broker_stamp, "incident", "TCP", "127.0.0.1", (uint16_t)8080, "192.168.0.1", (uint16_t)9090};
-    auto alert = acu::IncomingAlert(topic, msg);
+    auto alert = beemaster::LatticeIncomingAlert(topic, msg);
 
     // Open DB
     beemaster::RocksStorage<int> storage = beemaster::RocksStorage<int>("/tmp/test");
@@ -203,7 +204,7 @@ TEST_CASE("Testing LatticeCorrelation", "[lattieCorrelation]") {
         //TODO: DIRTY LIKE DAVID :>
         std::system("rm -rf /tmp/test");
 
-        std::vector<const acu::IncomingAlert*> alerts = {&alert};
+        std::vector<const beemaster::LatticeIncomingAlert*> alerts = {&alert};
         auto pattern2 = latCorr.correlate(alerts, thres[0].countRatio);
     }
     SECTION("MULTIPLE ALERTS"){
@@ -211,8 +212,8 @@ TEST_CASE("Testing LatticeCorrelation", "[lattieCorrelation]") {
         std::system("rm -rf /tmp/test");
 
         auto msg = broker::message{broker_stamp, "incident", "TCP", "127.0.0.1", (uint16_t)8080, "192.168.0.2", (uint16_t)7070};
-        auto alert2 = acu::IncomingAlert(topic, msg);
-        std::vector<const acu::IncomingAlert*> alerts = {&alert, &alert2};
+        auto alert2 = beemaster::LatticeIncomingAlert(topic, msg);
+        std::vector<const beemaster::LatticeIncomingAlert*> alerts = {&alert, &alert2};
         auto pattern2 = latCorr.correlate(alerts, 0);
         for(auto pattern21 : *pattern2) {
             auto pattern12 = pattern21.second;
@@ -275,33 +276,33 @@ TEST_CASE("Testing LatticeCorrelation", "[lattieCorrelation]") {
         std::system("rm -rf /tmp/test");
 
         auto msg = broker::message{broker_stamp, "incident", "UDP", "60.240.134.94", (uint16_t)4313, "192.168.0.1", (uint16_t)1434};
-        auto alert = acu::IncomingAlert(topic, msg);
+        auto alert = beemaster::LatticeIncomingAlert(topic, msg);
         
         msg = broker::message{broker_stamp, "incident", "TCP", "60.240.134.94", (uint16_t)4313, "192.168.0.1", (uint16_t)1434};
-        auto alert2 = acu::IncomingAlert(topic, msg);
+        auto alert2 = beemaster::LatticeIncomingAlert(topic, msg);
         
         msg = broker::message{broker_stamp, "incident", "UDP", "60.240.134.94", (uint16_t)4313, "192.168.0.1", (uint16_t)3276};
-        auto alert3 = acu::IncomingAlert(topic, msg);
+        auto alert3 = beemaster::LatticeIncomingAlert(topic, msg);
         
         msg = broker::message{broker_stamp, "incident", "TCP", "60.240.134.94", (uint16_t)4313, "192.168.0.1", (uint16_t)3276};
-        auto alert4 = acu::IncomingAlert(topic, msg);
+        auto alert4 = beemaster::LatticeIncomingAlert(topic, msg);
         
         msg = broker::message{broker_stamp, "incident", "UDP", "60.240.134.94", (uint16_t)2771, "192.168.0.1", (uint16_t)1434};
-        auto alert5 = acu::IncomingAlert(topic, msg);
+        auto alert5 = beemaster::LatticeIncomingAlert(topic, msg);
 
         msg = broker::message{broker_stamp, "incident", "TCP", "60.240.134.94", (uint16_t)2771, "192.168.0.1", (uint16_t)1434};
-        auto alert6 = acu::IncomingAlert(topic, msg);
+        auto alert6 = beemaster::LatticeIncomingAlert(topic, msg);
 
         msg = broker::message{broker_stamp, "incident", "UDP", "60.240.134.94", (uint16_t)2771, "192.168.0.1", (uint16_t)3276};
-        auto alert7 = acu::IncomingAlert(topic, msg);
+        auto alert7 = beemaster::LatticeIncomingAlert(topic, msg);
 
         msg = broker::message{broker_stamp, "incident", "TCP", "60.240.134.94", (uint16_t)2771, "192.168.0.1", (uint16_t)3276};
-        auto alert8 = acu::IncomingAlert(topic, msg);
+        auto alert8 = beemaster::LatticeIncomingAlert(topic, msg);
         std::vector<int> limit = {85, 5, 5, 5, 65, 5, 35, 5};
-        std::vector<acu::IncomingAlert> input = {alert, alert2, alert3, alert4, alert5, alert6, alert7, alert8};
+        std::vector<beemaster::LatticeIncomingAlert> input = {alert, alert2, alert3, alert4, alert5, alert6, alert7, alert8};
         for(size_t j = 0; j<limit.size(); ++j){
             for(auto i = 0; i<limit.at(j); ++i){
-                latCorr.vStorage->Persist(new acu::IncomingAlert(input.at(j)));
+                latCorr.vStorage->Persist(new beemaster::LatticeIncomingAlert(input.at(j)));
             }
         }
         auto output = latCorr.Invoke();
@@ -309,5 +310,3 @@ TEST_CASE("Testing LatticeCorrelation", "[lattieCorrelation]") {
         REQUIRE(output->incidents[0] == "W32/Blast worm");
     }
 }
-
-

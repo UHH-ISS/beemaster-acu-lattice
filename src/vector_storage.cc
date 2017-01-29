@@ -10,7 +10,7 @@ namespace beemaster {
 
     VectorStorage::VectorStorage(std::string db_name)
         : acu::Storage::Storage(db_name) {
-            map = new std::unordered_map<std::string, std::vector<const acu::IncomingAlert*>*>;
+            map = new std::unordered_map<std::string, std::vector<const beemaster::LatticeIncomingAlert*>*>;
         }
 
     // Gracefully closes DB
@@ -23,19 +23,23 @@ namespace beemaster {
     }
 
     void VectorStorage::Persist(const acu::IncomingAlert *alert) {
+    // no op
+    }
+    
+    void VectorStorage::LatticePersist(const beemaster::LatticeIncomingAlert *alert) {
         assert(alert);
 
         if(map->count(*alert->topic) == 0) {
             // create vector, as topic is not yet stored
-            map->emplace(*alert->topic, new std::vector<const acu::IncomingAlert*>);
+            map->emplace(*alert->topic, new std::vector<const beemaster::LatticeIncomingAlert*>);
         }
 
         map->at(*alert->topic)->push_back(alert);
     }
 
-    std::vector<const acu::IncomingAlert*>* VectorStorage::Pop(const std::string topic) {
+    std::vector<const beemaster::LatticeIncomingAlert*>* VectorStorage::Pop(const std::string topic) {
         if(map->count(topic) == 0)
-            return new std::vector<const acu::IncomingAlert*>;
+            return new std::vector<const beemaster::LatticeIncomingAlert*>;
         auto vector = map->at(topic);
         map->erase(topic);
         return vector;

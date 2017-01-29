@@ -3,7 +3,8 @@
 //
 #include "latticeCorrelation.h"
 #include "lattice_outgoing_alert.h"
-#include <acu/incoming_alert.h>
+//#include <acu/incoming_alert.h>
+#include "lattice_incoming_alert.h"
 #include "lattice_threshold.h"
 #include <unordered_map>
 #include <string>
@@ -45,13 +46,17 @@ namespace beemaster{
     // all pattern types according to paper
     std::vector<string> patternTypes = {"srcIp", "srcIp:srcPrt", "srcIp:dstPrt", "srcIp:protocol", "srcIp:srcPrt:dstPrt", "srcIp:srcPrt:protocol", "srcIp:dstPrt:protocol", "srcIp:srcPrt:dstPrt:protocol"};
     // generate pattern for a certain patternType and alert. Map from alert all members according to patterntype to pattern
-    beemaster::pattern* beemaster::LatticeCorrelation::generatePattern(acu::IncomingAlert a, string patternSignature, int alertsSize){
+    beemaster::pattern* beemaster::LatticeCorrelation::generatePattern(beemaster::LatticeIncomingAlert a, string patternSignature, int alertsSize){
         beemaster::pattern* p = new beemaster::pattern;
         ptrdiff_t pos = find(patternTypes.begin(), patternTypes.end(), patternSignature) - patternTypes.begin();
         p->type = pos+1;
         p->key = std::to_string(p->type);
         auto elements = split(patternSignature, ':');
         for (auto element : elements){
+            //p->attributes.insert({element, a.getAttribute(element)});
+            p->key += ":" + p->attributes[element];
+            a.getAttribute("test");
+            /*
             if(element == "srcIp"){
                 p->attributes.insert({element, a.source_ip()});
                 p->key += ":" +p->attributes[element];
@@ -65,6 +70,7 @@ namespace beemaster{
                 p->attributes.insert({element, a.protocol()});
                 p->key += ":" + p->attributes[element];
             }
+            */
         }
         p->count = 1;
         p->support = p->count / float(alertsSize);
@@ -111,7 +117,7 @@ namespace beemaster{
         }
         return o;
     }
-    unordered_map<std::string, beemaster::pattern*>* beemaster::LatticeCorrelation::correlate(vector<const acu::IncomingAlert*> alerts, float threshold){
+    unordered_map<std::string, beemaster::pattern*>* beemaster::LatticeCorrelation::correlate(vector<const beemaster::LatticeIncomingAlert*> alerts, float threshold){
         // init set of patterns that will be returned
         auto patterns = new unordered_map<std::string, pattern*>;
         // All Lattice, use srcIp as Key

@@ -7,7 +7,8 @@
 #include <unordered_map>
 #include "lattice_threshold.h"
 #include "lattice_outgoing_alert.h"
-#include <acu/incoming_alert.h>
+//#include <acu/incoming_alert.h>
+//#include "lattice_incoming_alert.h"
 namespace beemaster {
         struct pattern {
             std::unordered_map<std::string, std::string> attributes;
@@ -28,7 +29,7 @@ namespace beemaster {
         std::vector<beemaster::LatticeThreshold>* latticeThresholds;
         std::string topic;
         std::unordered_map<int, std::string> attackMap;
-        pattern* generatePattern(acu::IncomingAlert alert, std::string patternSignature, int alertsSize);
+        pattern* generatePattern(beemaster::LatticeIncomingAlert alert, std::string patternSignature, int alertsSize);
     void generateNodesRelation(std::unordered_map<std::string, pattern*>* pattern);
 
 
@@ -36,7 +37,7 @@ namespace beemaster {
                 : acu::Correlation(storage, thresholds), vStorage(vStorage), storage(storage), latticeThresholds(latticeThresholds), topic(topic) {
         this->attackMap = {{1,"scan"},{2,"Flash crowds response"}, {3,"Trinoo DDoS"}, {4,"worm"}, {5,"reflector DDoS"}, {6,"SYN flood response"}, {7,"W32/Blast worm"}, {8,"SQL-Slammer worm"}};
             };
-            std::unordered_map<std::string, pattern*>* correlate(std::vector<const acu::IncomingAlert*> alerts, float threshold);
+            std::unordered_map<std::string, pattern*>* correlate(std::vector<const beemaster::LatticeIncomingAlert*> alerts, float threshold);
             std::unordered_map<std::string, pattern*>* latticeCompression(std::unordered_map<std::string, pattern*>* lattice, float threshold);
             beemaster::LatticeOutgoingAlert* Invoke();
     };

@@ -6,7 +6,10 @@ set(SOURCE_FILES
         rocks_storage.cc
         vector_storage.cc
         config_parser.cc
-		latticeCorrelation.cc)
+		latticeCorrelation.cc
+				lattice_threshold.cc
+				lattice_incoming_alert.cc
+				lattice_outgoing_alert.cc)
 
 # Executable definition
 add_executable(acu-impl ${SOURCE_FILES})
