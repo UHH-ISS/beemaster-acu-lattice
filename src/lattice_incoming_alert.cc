@@ -15,7 +15,6 @@ namespace beemaster {
         auto rec = broker::get<broker::record>(message[0]);
         assert(rec->size() == 6);
         this->attributes = {};
-        this->attributes.insert({"test", "test"});
         this->attributes.insert({"srcIp",*broker::get<std::string>(rec->get(1).get())});
         this->attributes.insert({"srcPrt",std::to_string(*broker::get<uint64_t>(rec->get(2).get()))});
         this->attributes.insert({"dstIp",*broker::get<std::string>(rec->get(3).get())});
