@@ -3,12 +3,10 @@
  */
 #include "catch.hpp"
 #include "../src/latticeCorrelation.h"
-//#include <acu/incoming_alert.h>
 #include "../src/lattice_incoming_alert.h"
 #include "../src/rocks_storage.h"
 #include "../src/lattice_outgoing_alert.h"
 #include "../src/lattice_threshold.h"
-//#include <acu/correlation.h>
 #include <unordered_map>
 #include <utility>
 
@@ -18,7 +16,17 @@ TEST_CASE("Testing LatticeCorrelation", "[lattieCorrelation]") {
     auto val = std::chrono::duration_cast<std::chrono::duration<double>>(time_stamp.time_since_epoch());
     auto broker_stamp = broker::time_point{val.count()};
     auto topic = new std::string("test");
-    auto msg = broker::message{broker_stamp, "incident", "TCP", "127.0.0.1", (uint16_t)8080, "192.168.0.1", (uint16_t)9090};
+    auto rec = broker::record({
+            broker::record::field(broker_stamp),
+            broker::record::field("127.0.0.1"),
+            broker::record::field((acu::port_t)8080),
+            broker::record::field("192.168.0.1"),
+            broker::record::field((acu::port_t)9090)
+    });
+    auto prot = broker::record({
+            broker::record::field("TCP")
+            });
+    auto msg = broker::message{rec, prot};
     auto alert = beemaster::LatticeIncomingAlert(topic, msg);
 
     // Open DB
@@ -48,7 +56,6 @@ TEST_CASE("Testing LatticeCorrelation", "[lattieCorrelation]") {
     REQUIRE(p1->children.empty());
     REQUIRE(p1->remaining == 0);
     pattern_set->insert({p1->key, p1});
-   
     //generate type3 pattern
     p1= latCorr.generatePattern(alert, "srcIp:dstPrt", 1);
     REQUIRE(p1->attributes.size() == 2);
@@ -149,7 +156,6 @@ TEST_CASE("Testing LatticeCorrelation", "[lattieCorrelation]") {
         std::system("rm -rf /tmp/test");
         latCorr.generateNodesRelation(pattern_set);
         for(auto pattern : *pattern_set){
-            //printf("type: %d has %d children\n", pattern->type, pattern->children.size());
             //TODO Check all cases
             for(auto it = pattern.second->attributes.begin(); it!=pattern.second->attributes.end(); ++it ){
                 for(auto child : pattern.second->children){
@@ -188,14 +194,12 @@ TEST_CASE("Testing LatticeCorrelation", "[lattieCorrelation]") {
     }
     SECTION("Compression"){ 
         /*for(auto pattern : *pattern_set){
-            //printf("%f >= %d\n", pattern->support, thres[0].count);
             REQUIRE(pattern->support >= thres[0].count);
         }
         */
         //compress
         auto newSet = latCorr.latticeCompression(pattern_set, thres[0].countRatio);
         for(auto pattern : *newSet){
-            //printf("%f >= %d\n", pattern->support, thres[0].count);
             REQUIRE(pattern.second->support >= thres[0].countRatio);
         }
     }
@@ -210,8 +214,17 @@ TEST_CASE("Testing LatticeCorrelation", "[lattieCorrelation]") {
     SECTION("MULTIPLE ALERTS"){
         //TODO: DIRTY LIKE DAVID :>
         std::system("rm -rf /tmp/test");
-
-        auto msg = broker::message{broker_stamp, "incident", "TCP", "127.0.0.1", (uint16_t)8080, "192.168.0.2", (uint16_t)7070};
+        auto rec1 = broker::record({
+            broker::record::field(broker_stamp),
+            broker::record::field("127.0.0.1"),
+            broker::record::field((acu::port_t)8080),
+            broker::record::field("192.168.0.1"),
+            broker::record::field((acu::port_t)7070)
+        });
+        auto prot1 = broker::record({
+            broker::record::field("TCP")        
+        });
+        auto msg = broker::message{rec1, prot1};
         auto alert2 = beemaster::LatticeIncomingAlert(topic, msg);
         std::vector<const beemaster::LatticeIncomingAlert*> alerts = {&alert, &alert2};
         auto pattern2 = latCorr.correlate(alerts, 0);
@@ -274,29 +287,61 @@ TEST_CASE("Testing LatticeCorrelation", "[lattieCorrelation]") {
     SECTION("PAPER TEST"){
         //TODO: DIRTY LIKE DAVID :>
         std::system("rm -rf /tmp/test");
+        auto rec = broker::record({
+            broker::record::field(broker_stamp),
+            broker::record::field("60.240.134.94"),
+            broker::record::field((acu::port_t)4313),
+            broker::record::field("192.168.0.1"),
+            broker::record::field((acu::port_t)1434)
+        });
+        auto protoUDP = broker::record({
+            broker::record::field("UDP")        
+        });
 
-        auto msg = broker::message{broker_stamp, "incident", "UDP", "60.240.134.94", (uint16_t)4313, "192.168.0.1", (uint16_t)1434};
+        auto protoTCP = broker::record({
+            broker::record::field("TCP")
+        });
+
+        auto msg = broker::message{rec, protoUDP};
         auto alert = beemaster::LatticeIncomingAlert(topic, msg);
         
-        msg = broker::message{broker_stamp, "incident", "TCP", "60.240.134.94", (uint16_t)4313, "192.168.0.1", (uint16_t)1434};
+        msg = broker::message{rec, protoTCP};
         auto alert2 = beemaster::LatticeIncomingAlert(topic, msg);
-        
-        msg = broker::message{broker_stamp, "incident", "UDP", "60.240.134.94", (uint16_t)4313, "192.168.0.1", (uint16_t)3276};
+        auto rec2 = broker::record({
+            broker::record::field(broker_stamp),
+            broker::record::field("60.240.134.94"),
+            broker::record::field((acu::port_t)4313),
+            broker::record::field("192.168.0.1"),
+            broker::record::field((acu::port_t)3276)
+        });
+        msg = broker::message{rec2, protoUDP};
         auto alert3 = beemaster::LatticeIncomingAlert(topic, msg);
         
-        msg = broker::message{broker_stamp, "incident", "TCP", "60.240.134.94", (uint16_t)4313, "192.168.0.1", (uint16_t)3276};
+        msg = broker::message{rec2, protoTCP};
         auto alert4 = beemaster::LatticeIncomingAlert(topic, msg);
-        
-        msg = broker::message{broker_stamp, "incident", "UDP", "60.240.134.94", (uint16_t)2771, "192.168.0.1", (uint16_t)1434};
+        auto rec3 = broker::record({
+            broker::record::field(broker_stamp),
+            broker::record::field("60.240.134.94"),
+            broker::record::field((acu::port_t)2771),
+            broker::record::field("192.168.0.1"),
+            broker::record::field((acu::port_t)1434)
+        });
+        msg = broker::message{rec3, protoUDP};
         auto alert5 = beemaster::LatticeIncomingAlert(topic, msg);
 
-        msg = broker::message{broker_stamp, "incident", "TCP", "60.240.134.94", (uint16_t)2771, "192.168.0.1", (uint16_t)1434};
+        msg = broker::message{rec3, protoTCP};
         auto alert6 = beemaster::LatticeIncomingAlert(topic, msg);
-
-        msg = broker::message{broker_stamp, "incident", "UDP", "60.240.134.94", (uint16_t)2771, "192.168.0.1", (uint16_t)3276};
+        auto rec4 = broker::record({
+            broker::record::field(broker_stamp),
+            broker::record::field("60.240.134.94"),
+            broker::record::field((acu::port_t)2771),
+            broker::record::field("192.168.0.1"),
+            broker::record::field((acu::port_t)3276)
+        });
+        msg = broker::message{rec4, protoUDP};
         auto alert7 = beemaster::LatticeIncomingAlert(topic, msg);
 
-        msg = broker::message{broker_stamp, "incident", "TCP", "60.240.134.94", (uint16_t)2771, "192.168.0.1", (uint16_t)3276};
+        msg = broker::message{rec4, protoTCP};
         auto alert8 = beemaster::LatticeIncomingAlert(topic, msg);
         std::vector<int> limit = {85, 5, 5, 5, 65, 5, 35, 5};
         std::vector<beemaster::LatticeIncomingAlert> input = {alert, alert2, alert3, alert4, alert5, alert6, alert7, alert8};

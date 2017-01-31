@@ -53,9 +53,9 @@ namespace beemaster{
         p->key = std::to_string(p->type);
         auto elements = split(patternSignature, ':');
         for (auto element : elements){
-            //p->attributes.insert({element, a.getAttribute(element)});
+            p->attributes.insert({element, a.getAttribute(element)});
             p->key += ":" + p->attributes[element];
-            a.getAttribute("test");
+            //a.getAttribute("test");
             /*
             if(element == "srcIp"){
                 p->attributes.insert({element, a.source_ip()});
@@ -110,6 +110,7 @@ namespace beemaster{
         std::vector<std::string> incs = {};
         for(auto threshold : *this->latticeThresholds){ 
             auto res = this->correlate(*alerts,threshold.countRatio);
+            printf("pattern.size: %d\n", res->size());
             for(auto pattern : *res){
                 incs.push_back(this->attackMap.at(pattern.second->type));
             }
@@ -165,6 +166,7 @@ namespace beemaster{
         // init non-redundant significant pattern instance set
         for(auto& lattice_ip : lattice){
             // compress revised Lattice lattice_ip using threshold
+            printf("l.size: %d\n", lattice_ip.second->size());
             auto comp = this->latticeCompression(lattice_ip.second, threshold);
             patterns->insert(comp->begin(), comp->end());
         }
