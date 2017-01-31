@@ -347,7 +347,7 @@ TEST_CASE("Testing LatticeCorrelation", "[lattieCorrelation]") {
         std::vector<beemaster::LatticeIncomingAlert> input = {alert, alert2, alert3, alert4, alert5, alert6, alert7, alert8};
         for(size_t j = 0; j<limit.size(); ++j){
             for(auto i = 0; i<limit.at(j); ++i){
-                latCorr.vStorage->Persist(new beemaster::LatticeIncomingAlert(input.at(j)));
+                latCorr.vStorage->LatticePersist(new beemaster::LatticeIncomingAlert(input.at(j)));
             }
         }
         auto output = latCorr.Invoke();
