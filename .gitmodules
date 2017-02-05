@@ -1,0 +1,3 @@
+[submodule "mp-ids-acu-fw"]
+	path = mp-ids-acu-fw
+	url = git@git.informatik.uni-hamburg.de:iss/mp-ids-acu-fw.git
