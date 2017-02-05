@@ -2,7 +2,7 @@
 // Created by florian on 12/1/16.
 //
 #include "latticeCorrelation.h"
-#include "lattice_outgoing_alert.h"
+#include <acu/outgoing_alert.h>
 //#include <acu/incoming_alert.h>
 #include "lattice_incoming_alert.h"
 #include "lattice_threshold.h"
@@ -104,16 +104,16 @@ namespace beemaster{
         }
     }
 
-    beemaster::LatticeOutgoingAlert* beemaster::LatticeCorrelation::Invoke(){
-        beemaster::LatticeOutgoingAlert* o = nullptr;
+    acu::OutgoingAlert* beemaster::LatticeCorrelation::Invoke(){
+        acu::OutgoingAlert* o = nullptr;
         auto alerts = this->vStorage->Pop(this->topic);
-        std::vector<std::string> incs = {};
+        std::string incs = "";
         for(auto threshold : *this->latticeThresholds){ 
             auto res = this->correlate(*alerts,threshold.countRatio);
             for(auto pattern : *res){
-                incs.push_back(this->attackMap.at(pattern.second->type));
+                incs += this->attackMap.at(pattern.second->type);
             }
-            o = new beemaster::LatticeOutgoingAlert(incs, std::chrono::system_clock::now());
+            o = new acu::OutgoingAlert(incs, std::chrono::system_clock::now());
         }
         return o;
     }

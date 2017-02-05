@@ -6,7 +6,7 @@
 #include <algorithm>
 #include <unordered_map>
 #include "lattice_threshold.h"
-#include "lattice_outgoing_alert.h"
+#include <acu/outgoing_alert.h>
 //#include <acu/incoming_alert.h>
 //#include "lattice_incoming_alert.h"
 namespace beemaster {
@@ -39,7 +39,7 @@ namespace beemaster {
             };
             std::unordered_map<std::string, pattern*>* correlate(std::vector<const beemaster::LatticeIncomingAlert*> alerts, float threshold);
             std::unordered_map<std::string, pattern*>* latticeCompression(std::unordered_map<std::string, pattern*>* lattice, float threshold);
-            beemaster::LatticeOutgoingAlert* Invoke();
+            acu::OutgoingAlert* Invoke();
     };
 
 }

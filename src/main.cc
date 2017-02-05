@@ -15,7 +15,7 @@
 #include "lattice_threshold.h"
 #include <iostream>
 #include <csignal>
-
+#include <unistd.h>
 using namespace beemaster;
 
 /// http://en.cppreference.com/w/cpp/utility/program/signal
@@ -74,7 +74,7 @@ int main(int argc, char* argv[]) {
 
     // setup algorithms
     auto thresholds = new std::vector<beemaster::LatticeThreshold>;
-    thresholds->push_back(beemaster::LatticeThreshold(1, "test", "whatever"));
+    thresholds->push_back(beemaster::LatticeThreshold(0.7, "test", "whatever"));
     auto lattice = new LatticeCorrelation(public_storage, lattice_storage, thresholds, "acu/test");
 
     // setup acu
@@ -89,6 +89,7 @@ int main(int argc, char* argv[]) {
     acu.Run();
     for (;;)
         acu.CheckForAlerts();
+        usleep(100);
 
     return 0;
 }
