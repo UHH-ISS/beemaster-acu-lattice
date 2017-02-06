@@ -75,7 +75,7 @@ int main(int argc, char* argv[]) {
     // setup algorithms
     auto thresholds = new std::vector<beemaster::LatticeThreshold>;
     thresholds->push_back(beemaster::LatticeThreshold(0.7, "test", "whatever"));
-    auto lattice = new LatticeCorrelation(public_storage, lattice_storage, thresholds, "beemaster/bro/tcp");
+    auto lattice = new LatticeCorrelation(public_storage, lattice_storage, thresholds, "beemaster/bro/lattice");
 
     // setup acu
     auto acu = acu::Acu(public_storage, alert_mapper);
@@ -83,7 +83,7 @@ int main(int argc, char* argv[]) {
     acu.SetReceiverInfo(r_address, r_port);
     acu.SetSenderInfo(s_address, s_port);
     // - add algorithms
-    acu.Register(new std::vector<std::string>{"beemaster/bro/tcp"}, nullptr, lattice);
+    acu.Register(new std::vector<std::string>{"beemaster/bro/lattice"}, nullptr, lattice);
 
     // start acu
     acu.Run();
