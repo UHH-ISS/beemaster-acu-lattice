@@ -37,7 +37,7 @@ namespace beemaster {
                 : acu::Correlation(storage, thresholds), vStorage(vStorage), storage(storage), latticeThresholds(latticeThresholds), topic(topic) {
         this->attackMap = {{1,"scan"},{2,"Flash crowds response"}, {3,"Trinoo DDoS"}, {4,"worm"}, {5,"reflector DDoS"}, {6,"SYN flood response"}, {7,"W32/Blast worm"}, {8,"SQL-Slammer worm"}};
             };
-            std::unordered_map<std::string, pattern*>* correlate(std::vector<const beemaster::LatticeIncomingAlert*> alerts, float threshold);
+            std::unordered_map<std::string, pattern*>* correlate(std::vector<const acu::IncomingAlert*> alerts, float threshold);
             std::unordered_map<std::string, pattern*>* latticeCompression(std::unordered_map<std::string, pattern*>* lattice, float threshold);
             acu::OutgoingAlert* Invoke();
     };

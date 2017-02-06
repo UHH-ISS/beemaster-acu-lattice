@@ -27,13 +27,11 @@ namespace beemaster {
         /// Persist an alert
         void Persist(const acu::IncomingAlert *alert);
         
-        // Persist LatticeAlert
-        void LatticePersist(const beemaster::LatticeIncomingAlert *alert);
         /// Return all messages for *topic* and remove them from the DB
-        std::vector<const beemaster::LatticeIncomingAlert*>* Pop(const std::string topic);
+        std::vector<const acu::IncomingAlert*>* Pop(const std::string topic);
 
     private:
-        std::unordered_map<std::string, std::vector<const beemaster::LatticeIncomingAlert*>*>* map;
+        std::unordered_map<std::string, std::vector<const acu::IncomingAlert*>*>* map;
     };
 }
 

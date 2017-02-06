@@ -20,7 +20,7 @@ namespace beemaster {
         std::unordered_map<std::string, const std::string> attributes;
 
         //give attribute back
-        std::string getAttribute(std::string key);
+        std::string getAttribute(std::string key) const;
 
         virtual bool operator==(const LatticeIncomingAlert&) const;
         virtual bool operator!=(const LatticeIncomingAlert&) const;

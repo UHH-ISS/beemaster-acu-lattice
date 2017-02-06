@@ -8,6 +8,7 @@
  */
 
 #include <acu/acu.h>
+#include "lattice_alert_mapper.h"
 #include "config_parser.h"
 #include "rocks_storage.h"
 #include "vector_storage.h"
@@ -70,12 +71,12 @@ int main(int argc, char* argv[]) {
     auto lattice_storage = new RocksStorage<int>(rocks_path);
 
     // get mapper
-    auto alert_mapper = new acu::AlertMapper();
+    auto alert_mapper = new LatticeAlertMapper();
 
     // setup algorithms
     auto thresholds = new std::vector<beemaster::LatticeThreshold>;
     thresholds->push_back(beemaster::LatticeThreshold(0.7, "test", "whatever"));
-    auto lattice = new LatticeCorrelation(public_storage, lattice_storage, thresholds, "beemaster/bro/lattice");
+    auto lattice = new LatticeCorrelation(public_storage, lattice_storage, thresholds, "beemaster/bro/tcp");
 
     // setup acu
     auto acu = acu::Acu(public_storage, alert_mapper);
@@ -83,13 +84,13 @@ int main(int argc, char* argv[]) {
     acu.SetReceiverInfo(r_address, r_port);
     acu.SetSenderInfo(s_address, s_port);
     // - add algorithms
-    acu.Register(new std::vector<std::string>{"beemaster/bro/lattice"}, nullptr, lattice);
+    acu.Register(new std::vector<std::string>{"beemaster/bro/tcp"}, nullptr, lattice);
 
     // start acu
     acu.Run();
-    for (;;)
+    for (;;) {
         acu.CheckForAlerts();
         usleep(100);
-
+    }
     return 0;
 }
