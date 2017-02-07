@@ -3,7 +3,7 @@
 //
 #include "latticeCorrelation.h"
 #include <acu/outgoing_alert.h>
-//#include <acu/incoming_alert.h>
+#include "lattice_outgoing_alert.h"
 #include "lattice_incoming_alert.h"
 #include "lattice_threshold.h"
 #include <unordered_map>
@@ -114,7 +114,7 @@ namespace beemaster{
                 incs += this->attackMap.at(pattern.second->type);
                 printf("incs: %s\n", incs.c_str());
             }
-            o = new acu::OutgoingAlert(incs, std::chrono::system_clock::now());
+            o = new beemaster::LatticeOutgoingAlert(incs, std::chrono::system_clock::now());
         }
         return o;
     }
