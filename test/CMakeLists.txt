@@ -12,7 +12,7 @@ endforeach()
 set(SOURCE_FILES
         main.cc
         test_rocks_storage.cc
-				test_vector_storage.cc
+				#test_vector_storage.cc
         test_config_parser.cc
 				#test_lattice.cc
 				)
