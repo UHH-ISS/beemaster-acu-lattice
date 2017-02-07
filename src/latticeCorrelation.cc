@@ -112,7 +112,6 @@ namespace beemaster{
             auto res = this->correlate(*alerts,threshold.countRatio);
             for(auto pattern : *res){
                 incs += this->attackMap.at(pattern.second->type);
-                printf("incs: %s\n", incs.c_str());
             }
             o = new beemaster::LatticeOutgoingAlert(incs, std::chrono::system_clock::now());
         }
@@ -126,7 +125,7 @@ namespace beemaster{
         unordered_map<std::string, pattern*>* lattice_ip;
         for(auto incAlert : alerts){
             beemaster::LatticeIncomingAlert* alert = (beemaster::LatticeIncomingAlert*) incAlert;
-            //printf("%s, %s, %s, %s", alert->getAttribute("srcIp"), alert->getAttribute("srcPrt"), alert->getAttribute("dstPrt"), alert->getAttribute("protocol"));
+            //printf("%s| %s| %s| %s\n", alert->getAttribute("srcIp").c_str(), alert->getAttribute("srcPrt").c_str(), alert->getAttribute("dstPrt").c_str(), alert->getAttribute("protocol").c_str());
             string ip = alert->source_ip();
             int it = lattice.count(ip);
             if(it == 0){

@@ -29,22 +29,17 @@ TEST_CASE("Testing read/write operations", "[vector_storage]") {
         broker::record::field(broker_stamp),
         broker::record::field("127.0.0.1"),
         broker::record::field((acu::port_t)8080),
-        broker::record::field("192.168.0.1"),
-        broker::record::field((acu::port_t)9090)
-    });
-    auto prot = broker::record({
+        broker::record::field((acu::port_t)9090),
         broker::record::field("TCP")   
-    });
-    
-    auto message = broker::message{rec, prot};
+    });  
+    auto message = broker::message{"",rec};
 
     auto alert = new beemaster::LatticeIncomingAlert(topic1, message);
     auto alert2 = new beemaster::LatticeIncomingAlert(topic2, message);
     auto alert3 = new beemaster::LatticeIncomingAlert(topic1, message);
-
     SECTION("Single insert") {
         // INSERT
-        REQUIRE_NOTHROW(storage->LatticePersist(alert2));
+        REQUIRE_NOTHROW(storage->Persist(alert2));
 
         // POP
         auto popped = storage->Pop(*topic2);
@@ -61,9 +56,9 @@ TEST_CASE("Testing read/write operations", "[vector_storage]") {
 
     SECTION("Multiple inserts") {
         // MULTIPLE INSERT
-        REQUIRE_NOTHROW(storage->LatticePersist(alert));
-        REQUIRE_NOTHROW(storage->LatticePersist(alert2));
-        REQUIRE_NOTHROW(storage->LatticePersist(alert3));
+        REQUIRE_NOTHROW(storage->Persist(alert));
+        REQUIRE_NOTHROW(storage->Persist(alert2));
+        REQUIRE_NOTHROW(storage->Persist(alert3));
 
         auto popped = storage->Pop(*topic1);
         REQUIRE(popped->size() == 2);
@@ -77,7 +72,6 @@ TEST_CASE("Testing read/write operations", "[vector_storage]") {
         REQUIRE(popped->size() == 0);
         delete popped;
     }
-
     // CLEANUP
     delete storage;
 #pragma GCC diagnostic push
