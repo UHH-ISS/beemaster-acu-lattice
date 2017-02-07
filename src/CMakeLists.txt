@@ -10,7 +10,8 @@ set(SOURCE_FILES
 				lattice_threshold.cc
 				lattice_incoming_alert.cc
 				lattice_outgoing_alert.cc
-				lattice_alert_mapper.cc)
+				lattice_alert_mapper.cc
+				lattice_aggregation.cc)
 
 # Executable definition
 add_executable(acu-impl ${SOURCE_FILES})

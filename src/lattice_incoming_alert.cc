@@ -17,11 +17,11 @@ namespace beemaster {
         this->attributes = {};
         this->attributes.insert({"srcIp",*broker::get<std::string>(rec->get(1).get())});
         this->attributes.insert({"srcPrt",std::to_string(*broker::get<uint64_t>(rec->get(2).get()))});
-        this->attributes.insert({"dstPrt",std::to_string(*broker::get<uint64_t>(rec->get(4).get()))});
+        this->attributes.insert({"dstPrt",std::to_string(*broker::get<uint64_t>(rec->get(3).get()))});
         //TODO: Revert this before prod
         //rec = broker::get<broker::record>(message[2]);
-        //this->attributes.insert({"protocol",*broker::get<std::string>(rec->get(0).get())});
-        this->attributes.insert({"protocol","TCP"});
+        this->attributes.insert({"protocol",*broker::get<std::string>(rec->get(4).get())});
+        //this->attributes.insert({"protocol","TCP"});
         // TODO: We could also "typecheck" the message fields here to fail early?
     }
 
