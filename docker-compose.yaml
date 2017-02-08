@@ -1,0 +1,82 @@
+version: '2'
+# This Composefile uses named volumes for simplicity. The actual data is saved to /var/lib/docker/volumes/$VOLUME/_data.
+# Build args are passed to the Dockerfile to determine the container's purpose.
+
+services:
+  bro-master:
+    build:
+      context: ../mp-ids-bro
+      args:
+        PURPOSE: master
+    environment:
+      - MASTER_PUBLIC_PORT=9999
+      - MASTER_PUBLIC_IP=bro-master
+    ports:
+      - 9999:9999
+    volumes:
+      - /var/beemaster/log/bro-master:/usr/local/bro/logs
+
+  bro-slave-1:
+    build:
+      context: ../mp-ids-bro
+      args:
+        PURPOSE: slave
+    environment:
+      - SLAVE_PUBLIC_PORT=9991
+      - SLAVE_PUBLIC_IP=172.18.0.6
+      - MASTER_PUBLIC_PORT=9999
+      - MASTER_PUBLIC_IP=bro-master
+    ports:
+      - "9991:9999/udp"
+    volumes:
+      - /var/beemaster/log/bro-slave-1:/usr/local/bro/logs
+    depends_on:
+      - bro-master 
+  bro-slave-2:
+    build:
+      context: ../mp-ids-bro
+      args:
+        PURPOSE: slave
+    environment:
+      - SLAVE_PUBLIC_PORT=9992
+      - SLAVE_PUBLIC_IP=172.18.0.5
+      - MASTER_PUBLIC_PORT=9999
+      - MASTER_PUBLIC_IP=bro-master
+    ports:
+      - "9992:9999/tcp"
+    volumes:
+      - /var/beemaster/log/bro-slave-2:/usr/local/bro/logs
+    depends_on:
+      - bro-master 
+  bro-slave-3:
+    build:
+      context: ../mp-ids-bro
+      args:
+        PURPOSE: slave
+    environment:
+      - SLAVE_PUBLIC_PORT=9992
+      - SLAVE_PUBLIC_IP=172.18.0.3
+      - MASTER_PUBLIC_PORT=9999
+      - MASTER_PUBLIC_IP=bro-master
+    ports:
+      - "9992:9999/udp"
+    volumes:
+      - /var/beemaster/log/bro-slave-3:/usr/local/bro/logs
+    depends_on:
+      - bro-master 
+  bro-slave-4:
+    build:
+      context: ../mp-ids-bro
+      args:
+        PURPOSE: slave
+    environment:
+      - SLAVE_PUBLIC_PORT=9991
+      - SLAVE_PUBLIC_IP=172.18.0.4
+      - MASTER_PUBLIC_PORT=9999
+      - MASTER_PUBLIC_IP=bro-master
+    ports:
+      - "9991:9999/tcp"
+    volumes:
+      - /var/beemaster/log/bro-slave-4:/usr/local/bro/logs
+    depends_on:
+      - bro-master 
