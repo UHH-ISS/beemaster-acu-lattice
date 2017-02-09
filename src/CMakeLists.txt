@@ -9,7 +9,6 @@ set(SOURCE_FILES
         lattice_incoming_alert.cc
         lattice_correlation.cc
         lattice_threshold.cc
-        rocks_storage.cc
         vector_storage.cc)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unused-parameter")
