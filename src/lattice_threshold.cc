@@ -3,8 +3,8 @@
 namespace beemaster {
     bool LatticeThreshold::operator==(const LatticeThreshold &rhs) const {
         return countRatio == rhs.countRatio
-            && field_name == rhs.field_name
-            && value == rhs.value;
+               && field_name == rhs.field_name
+               && value == rhs.value;
     }
 
     bool LatticeThreshold::operator!=(const LatticeThreshold &rhs) const {

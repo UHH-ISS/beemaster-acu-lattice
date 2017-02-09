@@ -13,7 +13,7 @@
 
 namespace beemaster {
 
-    class LatticeAlertMapper: public acu::AlertMapper  {
+    class LatticeAlertMapper : public acu::AlertMapper {
     public:
         /// Factory method to convert a raw Broker message into the
         /// corresponding IncomingAlert-Subclass.
@@ -21,7 +21,7 @@ namespace beemaster {
         /// @param topic    The topic string to identify the message.
         /// @param message  The message to convert.
         /// @return         The correctly mapped message.
-        virtual acu::IncomingAlert* GetAlert(const std::string*, const broker::message&) const;
+        virtual acu::IncomingAlert *GetAlert(const std::string *, const broker::message &) const;
     };
 }
 #endif //ACU_IMPL_LATTICE_ALERT_MAPPER_H

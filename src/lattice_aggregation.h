@@ -10,14 +10,13 @@
 #include <acu/aggregation.h>
 
 namespace beemaster {
-    class LatticeAggregation: public acu::Aggregation {
+    class LatticeAggregation : public acu::Aggregation {
     private:
-    uint64_t count;
+        uint64_t count;
     public:
         LatticeAggregation(acu::Storage *storage, std::vector<acu::Threshold> *thresholds);
 
-
-        bool Invoke(const acu::IncomingAlert *alert);
+        bool Invoke(const acu::IncomingAlert *alert) override;
     };
 }
 

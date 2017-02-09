@@ -7,7 +7,9 @@
  */
 
 #include "catch.hpp"
-#include "../src/vector_storage.h"
+
+#include <lattice_incoming_alert.h>
+#include <vector_storage.h>
 
 TEST_CASE("Testing VectorStorage initialisation", "[vector_storage]") {
     auto storage = new beemaster::VectorStorage("test_db");
@@ -21,7 +23,7 @@ TEST_CASE("Testing read/write operations", "[vector_storage]") {
     // - topics:
     auto topic1 = new std::string("Topic 1");
     auto topic2 = new std::string("Topic 2");
-    // - message: 
+    // - message:
     auto time_stamp = std::chrono::system_clock::now();
     auto val = std::chrono::duration_cast<std::chrono::duration<double>>(time_stamp.time_since_epoch());
     auto broker_stamp = broker::time_point{val.count()};
@@ -29,10 +31,10 @@ TEST_CASE("Testing read/write operations", "[vector_storage]") {
         broker::record::field(broker_stamp),
         broker::record::field("127.0.0.1"),
         broker::record::field((acu::port_t)8080),
+        broker::record::field("127.0.0.1"),
         broker::record::field((acu::port_t)9090),
-        broker::record::field("TCP")   
-    });  
-    auto message = broker::message{"",rec};
+    });
+    auto message = broker::message{"",rec, "TCP"};
 
     auto alert = new beemaster::LatticeIncomingAlert(topic1, message);
     auto alert2 = new beemaster::LatticeIncomingAlert(topic2, message);

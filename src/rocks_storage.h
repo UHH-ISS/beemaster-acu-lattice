@@ -16,10 +16,10 @@
 
 namespace beemaster {
 
-    template <class count_t>
+    template<class count_t>
     class RocksStorage : public acu::Storage {
     public:
-        rocksdb::DB* Database;
+        rocksdb::DB *Database;
         rocksdb::Options Options;
 
         /// Initialise and open DB
@@ -67,17 +67,30 @@ namespace beemaster {
         /// ```
         /// Be aware, that the value is a rocksdb::Slice here. Cast via
         /// `*(count_t*)it->value().data()
-        rocksdb::Iterator* GetIterator();
+        rocksdb::Iterator *GetIterator();
     };
 
     // http://stackoverflow.com/a/8752879
-    template class RocksStorage<int>;
-    template class RocksStorage<uint8_t >;
-    template class RocksStorage<uint16_t>;
-    template class RocksStorage<uint32_t>;
-    template class RocksStorage<uint64_t>;
-    template class RocksStorage<float>;
-    template class RocksStorage<double>;
+    template
+    class RocksStorage<int>;
+
+    template
+    class RocksStorage<uint8_t>;
+
+    template
+    class RocksStorage<uint16_t>;
+
+    template
+    class RocksStorage<uint32_t>;
+
+    template
+    class RocksStorage<uint64_t>;
+
+    template
+    class RocksStorage<float>;
+
+    template
+    class RocksStorage<double>;
 }
 
 #endif //ACU_IMPL_ROCKSSTORAGE_H

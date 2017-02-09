@@ -12,12 +12,11 @@
 #include "config_parser.h"
 #include "rocks_storage.h"
 #include "vector_storage.h"
-#include "latticeCorrelation.h"
-#include "lattice_threshold.h"
+#include "lattice_correlation.h"
 #include "lattice_aggregation.h"
-#include <iostream>
 #include <csignal>
 #include <unistd.h>
+
 using namespace beemaster;
 
 /// http://en.cppreference.com/w/cpp/utility/program/signal
@@ -48,14 +47,15 @@ void signal_handler(int signum) {
 /// @param argc     Number of passed arguments
 /// @param argv     Array of arguments
 /// @return         Status
-int main(int argc, char* argv[]) {
+int main(int argc, char *argv[]) {
     // setup signal handler for endless loop
     std::signal(SIGINT, signal_handler);
     std::signal(SIGTERM, signal_handler);
 
     // parsing argument // alternatively: getopt(3)
-    if (argc < 2)
+    if (argc < 2) {
         throw std::runtime_error("Expect one argument for the configuration path!");
+    }
     std::string config_file(argv[1]);
 
     // parsing config
@@ -63,9 +63,9 @@ int main(int argc, char* argv[]) {
     // TODO provide defaults (maybe via default in Get...)
     auto rocks_path = config.GetString("storage", "location");
     auto r_address = config.GetString("receiver", "address");
-    auto r_port = (acu::port_t)config.GetInt("receiver", "port");
+    auto r_port = (acu::port_t) config.GetInt("receiver", "port");
     auto s_address = config.GetString("sender", "address");
-    auto s_port = (acu::port_t)config.GetInt("sender", "port");
+    auto s_port = (acu::port_t) config.GetInt("sender", "port");
 
     // setup storages
     auto public_storage = new VectorStorage("MainStorage");

@@ -3,15 +3,16 @@
 # Source files
 set(SOURCE_FILES
         main.cc
-        rocks_storage.cc
-        vector_storage.cc
         config_parser.cc
-		latticeCorrelation.cc
-				lattice_threshold.cc
-				lattice_incoming_alert.cc
-				lattice_outgoing_alert.cc
-				lattice_alert_mapper.cc
-				lattice_aggregation.cc)
+        lattice_alert_mapper.cc
+        lattice_aggregation.cc
+        lattice_incoming_alert.cc
+        lattice_correlation.cc
+        lattice_threshold.cc
+        rocks_storage.cc
+        vector_storage.cc)
+
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unused-parameter")
 
 # Executable definition
 add_executable(acu-impl ${SOURCE_FILES})
