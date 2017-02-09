@@ -5,28 +5,41 @@
 #UDP example
 #sudo hping3 -V --udp -p 9991 -c 10 172.18.0.4
 
+SLAVE_1=172.19.0.3
+SLAVE_2=172.19.0.5
+SLAVE_3=172.19.0.6
+SLAVE_4=172.19.0.4
+
 #85x 60.240.134.94:4313:1434:UDP
-sudo hping3 -V --udp -s 4313 -a 60.240.134.94 -k -p 9991 -c 85 172.18.0.6
+# SLAVE-1
+sudo hping3 -V --udp -s 4313 -a 60.240.134.94 -k -p 9991 -c 85 $SLAVE_1
 
 #5x 60.240.134.94:4313:1434:TCP
-sudo hping3 -V -S -p 9991 -s 4313 -a 60.240.134.94 -k -c 5 172.18.0.4
+# SLAVE-4
+sudo hping3 -V -S -p 9991 -s 4313 -a 60.240.134.94 -k -c 5 $SLAVE_4
 
 #5x	60.240.134.94:4313:3276:UDP
-sudo hping3 -V --udp -s 4313 -k -a 60.240.134.94 -p 9992 -c 5 172.18.0.3
+# SLAVE-3
+sudo hping3 -V --udp -s 4313 -k -a 60.240.134.94 -p 9992 -c 5 $SLAVE_3
 
 #5x 60.240.134.94:4313:3276:TCP
-sudo hping3 -V -S -p 9992 -s 4313 -a 60.240.134.94 -k -c 5 172.18.0.5
+# SLAVE-2
+sudo hping3 -V -S -p 9992 -s 4313 -a 60.240.134.94 -k -c 5 $SLAVE_2
 
 #65x	60.240.134.94:2771:1434:UDP
-sudo hping3 -V --udp -s 2771 -k -a 60.240.134.94 -p 9991 -c 65 172.18.0.6
+# SLAVE-1
+sudo hping3 -V --udp -s 2771 -k -a 60.240.134.94 -p 9991 -c 65 $SLAVE_1
 
 #5x	60.240.134.94:2771:1434:TCP
-sudo hping3 -V -S -p 9991 -s 2771 -a 60.240.134.94 -k -c 5 172.18.0.4
+# SLAVE-4
+sudo hping3 -V -S -p 9991 -s 2771 -a 60.240.134.94 -k -c 5 $SLAVE_4
 
 #35x 60.240.134.94:2771:3276:UDP
-sudo hping3 -V --udp -s 2771 -k -a 60.240.134.94 -p 9992 -c 35 172.18.0.3
+# SLAVE-3
+sudo hping3 -V --udp -s 2771 -k -a 60.240.134.94 -p 9992 -c 35 $SLAVE_3
 
 #5x	60.240.134.94:2771:3276:TCP
-sudo hping3 -V -S -p 9992 -s 2771 -a 60.240.134.94 -k -c 5 172.18.0.5
+# SLAVE-2
+sudo hping3 -V -S -p 9992 -s 2771 -a 60.240.134.94 -k -c 5 $SLAVE_2
 
 echo "result should be: W32/Blast worm\n"
