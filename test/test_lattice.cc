@@ -19,8 +19,6 @@ TEST_CASE("Testing LatticeCorrelation", "[lattice_correlation]") {
     });
     auto msg = broker::message{"", rec, "TCP"};
     auto alert = beemaster::LatticeIncomingAlert(topic, msg);
-    // Open DB
-    beemaster::RocksStorage<int> storage = beemaster::RocksStorage<int>("/tmp/test");
 
     // Create Threshold
     std::vector<beemaster::LatticeThreshold> thres = {};
@@ -28,7 +26,7 @@ TEST_CASE("Testing LatticeCorrelation", "[lattice_correlation]") {
     thres.push_back(t);
     beemaster::VectorStorage vStorage = beemaster::VectorStorage("/tmp/db2");
     // Create LatticeCorrelation instance
-    auto latCorr = beemaster::LatticeCorrelation(&vStorage, &storage, &thres, "test");
+    auto latCorr = beemaster::LatticeCorrelation(&vStorage, &thres, "test");
 
     //create set
     std::unordered_map<std::string, beemaster::pattern *> *pattern_set = new std::unordered_map<std::string, beemaster::pattern *>;

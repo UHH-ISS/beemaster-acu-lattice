@@ -10,7 +10,6 @@
 #include <acu/acu.h>
 #include "lattice_alert_mapper.h"
 #include "config_parser.h"
-#include "rocks_storage.h"
 #include "vector_storage.h"
 #include "lattice_correlation.h"
 #include "lattice_aggregation.h"
@@ -69,7 +68,6 @@ int main(int argc, char *argv[]) {
 
     // setup storages
     auto public_storage = new VectorStorage("MainStorage");
-    auto lattice_storage = new RocksStorage<int>(rocks_path);
 
     // get mapper
     auto alert_mapper = new LatticeAlertMapper();
@@ -77,7 +75,7 @@ int main(int argc, char *argv[]) {
     // setup algorithms
     auto thresholds = new std::vector<beemaster::LatticeThreshold>;
     thresholds->push_back(beemaster::LatticeThreshold(0.7, "", ""));
-    auto lattice = new LatticeCorrelation(public_storage, lattice_storage, thresholds, "beemaster/bro/lattice");
+    auto lattice = new LatticeCorrelation(public_storage, thresholds, "beemaster/bro/lattice");
 
     // setup acu
     auto acu = acu::Acu(public_storage, alert_mapper);

@@ -6,7 +6,6 @@
 
 #include "lattice_incoming_alert.h"
 #include "lattice_threshold.h"
-#include "rocks_storage.h"
 #include "vector_storage.h"
 
 #include <algorithm>
@@ -29,7 +28,6 @@ namespace beemaster {
     class LatticeCorrelation : public acu::Correlation {
     public:
         beemaster::VectorStorage *vStorage;
-        beemaster::RocksStorage<int> *storage;
         std::vector<beemaster::LatticeThreshold> *latticeThresholds;
         std::string topic;
         std::unordered_map<int, std::string> attackMap;
@@ -37,9 +35,9 @@ namespace beemaster {
         generatePattern(beemaster::LatticeIncomingAlert alert, std::string patternSignature, uint64_t alertsSize);
         void generateNodesRelation(std::unordered_map<std::string, pattern *> *pattern);
 
-        LatticeCorrelation(beemaster::VectorStorage *vStorage, beemaster::RocksStorage<int> *storage,
+        LatticeCorrelation(beemaster::VectorStorage *vStorage,
                            std::vector<beemaster::LatticeThreshold> *latticeThresholds, std::string topic)
-                : acu::Correlation(storage, thresholds), vStorage(vStorage), storage(storage),
+                : acu::Correlation(storage, thresholds), vStorage(vStorage),
                   latticeThresholds(latticeThresholds), topic(topic) {
             this->attackMap = {{1, "scan"},
                                {2, "Flash crowds response"},
