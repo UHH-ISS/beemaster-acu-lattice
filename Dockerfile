@@ -37,12 +37,12 @@ RUN rm -rf /scratch
 RUN mkdir /opt/acu /opt/acu-fw
 
 # well not perfect, but somehow we have to get our lib in there
-COPY mp-ids-acu-fw/CMakeLists.txt /opt/acu-fw
-COPY mp-ids-acu-fw/Makefile /opt/acu-fw
-COPY mp-ids-acu-fw/test /opt/acu-fw/test
-COPY mp-ids-acu-fw/include /opt/acu-fw/include
-COPY mp-ids-acu-fw/cmake /opt/acu-fw/cmake
-COPY mp-ids-acu-fw/src /opt/acu-fw/src
+COPY beemaster-acu-fw/CMakeLists.txt /opt/beemaster-acu-fw
+COPY beemaster-acu-fw/Makefile /opt/beemaster-acu-fw
+COPY beemaster-acu-fw/test /opt/beemaster-acu-fw/test
+COPY beemaster-acu-fw/include /opt/beemaster-acu-fw/include
+COPY beemaster-acu-fw/cmake /opt/beemaster-acu-fw/cmake
+COPY beemaster-acu-fw/src /opt/beemaster-acu-fw/src
 
 WORKDIR /opt/acu-fw
 RUN make
