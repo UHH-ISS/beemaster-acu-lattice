@@ -37,15 +37,12 @@ RUN rm -rf /scratch
 RUN mkdir /opt/acu /opt/acu-fw
 
 # well not perfect, but somehow we have to get our lib in there
-COPY beemaster-acu-fw/CMakeLists.txt /opt/beemaster-acu-fw
-COPY beemaster-acu-fw/Makefile /opt/beemaster-acu-fw
-COPY beemaster-acu-fw/test /opt/beemaster-acu-fw/test
-COPY beemaster-acu-fw/include /opt/beemaster-acu-fw/include
-COPY beemaster-acu-fw/cmake /opt/beemaster-acu-fw/cmake
-COPY beemaster-acu-fw/src /opt/beemaster-acu-fw/src
-
-WORKDIR /opt/acu-fw
-RUN make
+COPY beemaster-acu-fw/CMakeLists.txt /opt/acu/beemaster-acu-fw/
+COPY beemaster-acu-fw/Makefile /opt/acu/beemaster-acu-fw/
+COPY beemaster-acu-fw/test /opt/acu/beemaster-acu-fw/test
+COPY beemaster-acu-fw/include /opt/acu/beemaster-acu-fw/include
+COPY beemaster-acu-fw/cmake /opt/acu/beemaster-acu-fw/cmake
+COPY beemaster-acu-fw/src /opt/acu/beemaster-acu-fw/src
 
 COPY CMakeLists.txt /opt/acu
 COPY Makefile /opt/acu
@@ -53,7 +50,6 @@ COPY test /opt/acu/test
 COPY cmake /opt/acu/cmake
 COPY src /opt/acu/src
 COPY config-local.ini /opt/acu
-COPY config-uhh.ini /opt/acu
 
 WORKDIR /opt/acu
 RUN make
