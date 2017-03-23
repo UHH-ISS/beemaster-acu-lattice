@@ -1,4 +1,4 @@
-# MP-IDS Alert Correlation Unit: Custom Beemaster ACU Lattice
+# Alert Correlation Unit: Custom Beemaster ACU Lattice
 
 Beemaster ships with two custom ACU implementations, using the Beemaster [ACU framework](https://github.com/UHH-ISS/beemaster-acu-fw). The `master` branch of this repository contains the general Beemaster setup for custom ACUs, featuring a build setup and Dockerfile. Additionally, it contains the sources for a portscan detection ACU.
 
